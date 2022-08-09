@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
 use gtk4::{
+    gio,
     glib::{self, subclass::Signal},
+    prelude::StaticType,
     subclass::prelude::*,
     Box, Button, FileChooserNative,
 };
@@ -26,11 +28,10 @@ impl ObjectSubclass for ThemeChooserButton {
 impl ObjectImpl for ThemeChooserButton {
     fn signals() -> &'static [Signal] {
         static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-            vec![Signal::builder(
-                // Signal name
-                "file-selected",
-            )
-            .build()]
+            vec![Signal::builder("file-selected")
+                .param_types(&[gio::File::static_type().into()])
+                .return_type::<()>()
+                .build()]
         });
         SIGNALS.as_ref()
     }
