@@ -9,7 +9,6 @@ Build-Depends:
   cargo,
   libgtk-4-dev,
   meson,
-  ninja,
   pkg-config,
 Standards-Version: 4.3.0
 Homepage: https://github.com/pop-os/user-color-editor
