@@ -1,7 +1,9 @@
 mod application;
 #[rustfmt::skip]
 mod config;
+mod components;
 mod localize;
+mod util;
 mod window;
 
 use gtk4::{gio, glib};

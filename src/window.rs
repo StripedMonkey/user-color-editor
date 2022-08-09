@@ -1,11 +1,13 @@
-use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use gtk4::{gio, glib};
+use gtk4::{prelude::*, CssProvider};
 
 use crate::application::ExampleApplication;
+use crate::components::ColorOverridesEditor;
 use crate::config::{APP_ID, PROFILE};
 
 mod imp {
+
     use super::*;
 
     pub struct ExampleApplicationWindow {
@@ -69,9 +71,11 @@ glib::wrapper! {
 }
 
 impl ExampleApplicationWindow {
-    pub fn new(app: &ExampleApplication) -> Self {
-        glib::Object::new(&[("application", app)])
-            .expect("Failed to create ExampleApplicationWindow")
+    pub fn new(app: &ExampleApplication, provider: CssProvider) -> Self {
+        let self_: Self = glib::Object::new(&[("application", app)])
+            .expect("Failed to create ExampleApplicationWindow");
+        self_.set_child(Some(&ColorOverridesEditor::new(provider)));
+        self_
     }
 
     fn save_window_size(&self) -> Result<(), glib::BoolError> {

@@ -1,11 +1,11 @@
 use log::{debug, info};
 
 use glib::clone;
-use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use gtk4::{gdk, gio, glib};
+use gtk4::{prelude::*, CssProvider};
 
-use crate::config::{APP_ID, PKGDATADIR, PROFILE, VERSION};
+use crate::config::{APP_ID, PROFILE, VERSION};
 use crate::fl;
 use crate::window::ExampleApplicationWindow;
 
@@ -38,8 +38,9 @@ mod imp {
                 window.present();
                 return;
             }
+            let provider = app.setup_css();
 
-            let window = ExampleApplicationWindow::new(app);
+            let window = ExampleApplicationWindow::new(app, provider);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
@@ -54,7 +55,6 @@ mod imp {
             // Set icons for shell
             gtk4::Window::set_default_icon_name(APP_ID);
 
-            app.setup_css();
             app.setup_gactions();
             app.setup_accels();
         }
@@ -109,7 +109,7 @@ impl ExampleApplication {
         self.set_accels_for_action("app.quit", &["<Control>q"]);
     }
 
-    fn setup_css(&self) {
+    fn setup_css(&self) -> CssProvider {
         let provider = gtk4::CssProvider::new();
         provider.load_from_resource("/com/system76/UserColorEditor/style.css");
         if let Some(display) = gdk::Display::default() {
@@ -119,6 +119,7 @@ impl ExampleApplication {
                 gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
             );
         }
+        provider
     }
 
     fn show_about_dialog(&self) {
@@ -142,7 +143,6 @@ impl ExampleApplication {
     pub fn run(&self) {
         info!("User Color Editor ({})", APP_ID);
         info!("Version: {} ({})", VERSION, PROFILE);
-        info!("Datadir: {}", PKGDATADIR);
 
         ApplicationExtManual::run(self);
     }
