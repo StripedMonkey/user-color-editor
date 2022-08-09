@@ -9,13 +9,14 @@ use rust_embed::RustEmbed;
 
 #[derive(RustEmbed)]
 #[folder = "i18n/"]
-struct Localizations;
+struct Translations;
 
 pub static LANGUAGE_LOADER: Lazy<FluentLanguageLoader> = Lazy::new(|| {
+    let translations = Translations {};
     let loader: FluentLanguageLoader = fluent_language_loader!();
 
     loader
-        .load_fallback_language(&Localizations)
+        .load_fallback_language(&translations)
         .expect("Error while loading fallback language");
 
     loader
@@ -34,7 +35,7 @@ macro_rules! fl {
 
 // Get the `Localizer` to be used for localizing this library.
 pub fn localizer() -> Box<dyn Localizer> {
-    Box::from(DefaultLocalizer::new(&*LANGUAGE_LOADER, &Localizations))
+    Box::from(DefaultLocalizer::new(&*LANGUAGE_LOADER, &Translations))
 }
 
 pub fn localize() {

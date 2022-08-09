@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=User Color Editor
-Comment=Write a GTK + Rust application
+Comment=Customize named colors in adwaita for your user
 Type=Application
 Exec=user-color-editor
 Terminal=false

@@ -29,7 +29,7 @@
             "name": "user-color-editor",
             "buildsystem": "meson",
             "run-tests": true,
-            "config-opts": ["-Dprofile=development", "-Dvendor=false"],
+            "config-opts": ["-Dvendor=false"],
             "sources": [
                 {
                     "type": "dir",

@@ -2,6 +2,7 @@
 
 use crate::{
     components::theme_chooser_button::ThemeChooserButton,
+    fl,
     util::{hex_from_rgba, SRGBA},
 };
 
@@ -38,185 +39,194 @@ impl ColorOverridesEditor {
             ..set_orientation(Orientation::Vertical);
         };
 
-        // TODO use i18n for labels
         let accent_section = ExpanderRow::builder()
-            .name("Accent Colors")
+            .name(&fl!("accent-Colors"))
             .expanded(true)
             .enable_expansion(true)
-            .title("Accent Colors")
+            .title(&fl!("accent-Colors"))
             .hexpand(true)
             .build();
-        let (accent_bg_color, accent_bg_color_button) =
-            Self::get_color_button(&self_, "accent_bg_color", "Accent Background Color");
+        let accent_bg_color =
+            Self::get_color_button(&self_, "accent_bg_color", &fl!("accent-background-color"));
         accent_section.add_row(&accent_bg_color);
-        let (accent_fg_color, accent_fg_color_button) =
-            Self::get_color_button(&self_, "accent_fg_color", "Accent Foreground Color");
+        let accent_fg_color =
+            Self::get_color_button(&self_, "accent_fg_color", &fl!("accent-foreground-color"));
         accent_section.add_row(&accent_fg_color);
-        let (accent_color, accent_color_button) =
-            Self::get_color_button(&self_, "accent_color", "Accent Color");
+        let accent_color = Self::get_color_button(&self_, "accent_color", &fl!("accent-color"));
         accent_section.add_row(&accent_color);
 
         let destructive_section = ExpanderRow::builder()
-            .name("Destructive Colors")
+            .name(&fl!("destructive-colors"))
             .expanded(true)
             .enable_expansion(true)
-            .title("Destructive Colors")
+            .title(&fl!("destructive-colors"))
             .hexpand(true)
             .build();
-        let (destructive_bg_color, destructive_bg_color_button) = Self::get_color_button(
+        let destructive_bg_color = Self::get_color_button(
             &self_,
             "destructive_bg_color",
-            "Destructive Background Color",
+            "destructive-background-color",
         );
         destructive_section.add_row(&destructive_bg_color);
-        let (destructive_fg_color, destructive_fg_color_button) = Self::get_color_button(
+        let destructive_fg_color = Self::get_color_button(
             &self_,
             "destructive_fg_color",
-            "Destructive Foreground Color",
+            "destructive-foreground-color",
         );
         destructive_section.add_row(&destructive_fg_color);
-        let (destructive_color, destructive_color_button) =
-            Self::get_color_button(&self_, "destructive_color", "Destructive Color");
+        let destructive_color =
+            Self::get_color_button(&self_, "destructive_color", &fl!("destructive-color"));
         destructive_section.add_row(&destructive_color);
 
         let status_section = ExpanderRow::builder()
-            .name("Status Colors")
+            .name(&fl!("status-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Status Colors")
+            .title(&fl!("status-colors"))
             .hexpand(true)
             .build();
-        let (success_color, success_color_button) =
-            Self::get_color_button(&self_, "success_color", "Success Color");
+        let success_color = Self::get_color_button(&self_, "success_color", &fl!("success-color"));
         status_section.add_row(&success_color);
-        let (success_bg_color, success_bg_color_button) =
-            Self::get_color_button(&self_, "success_bg_color", "Success Background Color");
+        let success_bg_color =
+            Self::get_color_button(&self_, "success_bg_color", &fl!("success-background-color"));
         status_section.add_row(&success_bg_color);
-        let (success_fg_color, success_fg_color_button) =
-            Self::get_color_button(&self_, "success_fg_color", "Success Foreground Color");
+        let success_fg_color =
+            Self::get_color_button(&self_, "success_fg_color", &fl!("success-foreground-color"));
         status_section.add_row(&success_fg_color);
 
-        let (warning_color, warning_color_button) =
-            Self::get_color_button(&self_, "warning_color", "Warning Color");
+        let warning_color = Self::get_color_button(&self_, "warning_color", &fl!("warning-color"));
         status_section.add_row(&warning_color);
-        let (warning_bg_color, warning_bg_color_button) =
-            Self::get_color_button(&self_, "warning_bg_color", "Warning Background Color");
+        let warning_bg_color =
+            Self::get_color_button(&self_, "warning_bg_color", &fl!("warning-background-color"));
         status_section.add_row(&warning_bg_color);
-        let (warning_fg_color, warning_fg_color_button) =
-            Self::get_color_button(&self_, "warning_fg_color", "Warning Foreground Color");
+        let warning_fg_color =
+            Self::get_color_button(&self_, "warning_fg_color", &fl!("warning-foreground-color"));
         status_section.add_row(&warning_fg_color);
 
-        let (error_color, error_color_button) =
-            Self::get_color_button(&self_, "error_color", "Error Color");
+        let error_color = Self::get_color_button(&self_, "error_color", &fl!("error-color"));
         status_section.add_row(&error_color);
-        let (error_bg_color, error_bg_color_button) =
-            Self::get_color_button(&self_, "error_bg_color", "Error Background Color");
+        let error_bg_color =
+            Self::get_color_button(&self_, "error_bg_color", &fl!("error-background-color"));
         status_section.add_row(&error_bg_color);
-        let (error_fg_color, error_fg_color_button) =
-            Self::get_color_button(&self_, "error_fg_color", "Error Foreground Color");
+        let error_fg_color =
+            Self::get_color_button(&self_, "error_fg_color", &fl!("error-foreground-color"));
         status_section.add_row(&error_fg_color);
 
         let content_section = ExpanderRow::builder()
-            .name("Content Colors")
+            .name(&fl!("content-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Content Colors")
+            .title(&fl!("content-colors"))
             .hexpand(true)
             .build();
-        let (view_bg_color, view_bg_color_button) =
-            Self::get_color_button(&self_, "view_bg_color", "Widget Base Color");
+        let view_bg_color =
+            Self::get_color_button(&self_, "view_bg_color", &fl!("widget-base-color"));
         content_section.add_row(&view_bg_color);
-        let (view_fg_color, view_fg_color_button) =
-            Self::get_color_button(&self_, "view_fg_color", "Widget Text Color");
+        let view_fg_color =
+            Self::get_color_button(&self_, "view_fg_color", &fl!("widget-text-color"));
         content_section.add_row(&view_fg_color);
 
         let window_section = ExpanderRow::builder()
-            .name("Window Colors")
+            .name(&fl!("window-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Window Colors")
+            .title(&fl!("window-colors"))
             .hexpand(true)
             .build();
-        let (window_bg_color, window_bg_color_button) =
-            Self::get_color_button(&self_, "window_bg_color", "Window Background Color");
+        let window_bg_color =
+            Self::get_color_button(&self_, "window_bg_color", &fl!("window-background-color"));
         window_section.add_row(&window_bg_color);
-        let (window_fg_color, window_fg_color_button) =
-            Self::get_color_button(&self_, "window_fg_color", "Window Foreground Color");
+        let window_fg_color =
+            Self::get_color_button(&self_, "window_fg_color", &fl!("window-foreground-color"));
         window_section.add_row(&window_fg_color);
 
         let headerbar_section = ExpanderRow::builder()
-            .name("Headerbar Colors")
+            .name(&fl!("headerbar-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Headerbar Colors")
+            .title(&fl!("headerbar-colors"))
             .hexpand(true)
             .build();
-        let (headerbar_bg_color, headerbar_bg_color_button) =
-            Self::get_color_button(&self_, "headerbar_bg_color", "Headerbar Background Color");
+        let headerbar_bg_color = Self::get_color_button(
+            &self_,
+            "headerbar_bg_color",
+            &fl!("headerbar-background-color"),
+        );
         headerbar_section.add_row(&headerbar_bg_color);
 
-        let (headerbar_fg_color, headerbar_fg_color_button) =
-            Self::get_color_button(&self_, "headerbar_fg_color", "Headerbar Foreground Color");
+        let headerbar_fg_color = Self::get_color_button(
+            &self_,
+            "headerbar_fg_color",
+            &fl!("headerbar-foreground-color"),
+        );
         headerbar_section.add_row(&headerbar_fg_color);
 
-        let (headerbar_border_color, headerbar_border_color_button) =
-            Self::get_color_button(&self_, "headerbar_border_color", "Headerbar Border Color");
+        let headerbar_border_color = Self::get_color_button(
+            &self_,
+            "headerbar_border_color",
+            &fl!("headerbar-border-color"),
+        );
         headerbar_section.add_row(&headerbar_border_color);
 
-        let (headerbar_backdrop_color, headerbar_backdrop_color_button) = Self::get_color_button(
+        let headerbar_backdrop_color = Self::get_color_button(
             &self_,
             "headerbar_backdrop_color",
-            "Headerbar Backdrop Color",
+            "headerbar-backdrop-color",
         );
         headerbar_section.add_row(&headerbar_backdrop_color);
 
-        let (headerbar_shade_color, headerbar_shade_color_button) =
-            Self::get_color_button(&self_, "headerbar_shade_color", "Shade Color");
+        let headerbar_shade_color = Self::get_color_button(
+            &self_,
+            "headerbar_shade_color",
+            &fl!("headerbar-shade-color"),
+        );
         headerbar_section.add_row(&headerbar_shade_color);
 
         let card_section = ExpanderRow::builder()
-            .name("Card Colors")
+            .name(&fl!("card-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Card Colors")
+            .title(&fl!("card-colors"))
             .hexpand(true)
             .build();
-        let (card_bg_color, card_bg_color_button) =
-            Self::get_color_button(&self_, "card_bg_color", "Card Background Color");
+        let card_bg_color =
+            Self::get_color_button(&self_, "card_bg_color", &fl!("card-background-color"));
         card_section.add_row(&card_bg_color);
-        let (card_fg_color, card_fg_color_button) =
-            Self::get_color_button(&self_, "card_fg_color", "Card Foreground Color");
+        let card_fg_color =
+            Self::get_color_button(&self_, "card_fg_color", &fl!("card-foreground-color"));
         card_section.add_row(&card_fg_color);
-        let (card_shade_color, card_shade_color_button) =
-            Self::get_color_button(&self_, "card_shade_color", "Card Shade Color");
+        let card_shade_color =
+            Self::get_color_button(&self_, "card_shade_color", &fl!("card-shade-color"));
         card_section.add_row(&card_shade_color);
 
         let popover_section = ExpanderRow::builder()
-            .name("Popover Colors")
+            .name(&fl!("popover-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Popover Colors")
+            .title(&fl!("popover-colors"))
             .hexpand(true)
             .build();
-        let (popover_bg_color, popover_bg_color_button) =
-            Self::get_color_button(&self_, "popover_bg_color", "Popover Background Color");
+        let popover_bg_color =
+            Self::get_color_button(&self_, "popover_bg_color", &fl!("popover-background-color"));
         popover_section.add_row(&popover_bg_color);
-        let (popover_fg_color, popover_fg_color_button) =
-            Self::get_color_button(&self_, "popover_fg_color", "Popover Foreground Color");
+        let popover_fg_color =
+            Self::get_color_button(&self_, "popover_fg_color", &fl!("popover-foreground-color"));
         popover_section.add_row(&popover_fg_color);
 
         let misc_section = ExpanderRow::builder()
-            .name("Miscellaneous Colors")
+            .name(&fl!("miscellaneous-colors"))
             .expanded(false)
             .enable_expansion(true)
-            .title("Miscellaneous Colors")
+            .title(&fl!("miscellaneous-colors"))
             .hexpand(true)
             .build();
-        let (scrollbar_outline_color, scrollbar_outline_color_button) =
-            Self::get_color_button(&self_, "scrollbar_outline_color", "Scrollbar Outline Color");
+        let scrollbar_outline_color = Self::get_color_button(
+            &self_,
+            "scrollbar_outline_color",
+            &fl!("scrollbar-outline-color"),
+        );
         misc_section.add_row(&scrollbar_outline_color);
-        let (shade_color, shade_color_button) =
-            Self::get_color_button(&self_, "shade_color", "Shade Color");
+        let shade_color = Self::get_color_button(&self_, "shade_color", &fl!("shade-color"));
         misc_section.add_row(&shade_color);
 
         let c = Config::load().unwrap_or_default();
@@ -276,7 +286,7 @@ impl ColorOverridesEditor {
                         set_margin_bottom: 4,
                         set_margin_start: 4,
                         set_margin_end: 4,
-                        set_label: "Preview",
+                        set_label: &fl!("preview"),
                     },
 
                     append: save_button = &Button {
@@ -285,7 +295,7 @@ impl ColorOverridesEditor {
                         set_margin_start: 4,
                         set_margin_end: 4,
                         add_css_class: "suggested-action",
-                        set_label: "Save"
+                        set_label: &fl!("save")
                     },
 
 
@@ -402,186 +412,189 @@ impl ColorOverridesEditor {
                         color_editor.remove(&child);
                         c = color_editor.first_child();
                     }
+                    let self_ = self_.unwrap();
+
+                    // TODO cleanup duplicate code
                     let accent_section = ExpanderRow::builder()
-                    .name("Accent Colors")
-                    .expanded(true)
-                    .enable_expansion(true)
-                    .title("Accent Colors")
-                    .hexpand(true)
-                    .build();
-                let self_ = self_.unwrap();
-                let (accent_bg_color, accent_bg_color_button) =
-                    Self::get_color_button(&self_, "accent_bg_color", "Accent Background Color");
-                accent_section.add_row(&accent_bg_color);
-                let (accent_fg_color, accent_fg_color_button) =
-                    Self::get_color_button(&self_, "accent_fg_color", "Accent Foreground Color");
-                accent_section.add_row(&accent_fg_color);
-                let (accent_color, accent_color_button) =
-                    Self::get_color_button(&self_, "accent_color", "Accent Color");
-                accent_section.add_row(&accent_color);
+                        .name(&fl!("accent-Colors"))
+                        .expanded(true)
+                        .enable_expansion(true)
+                        .title(&fl!("accent-Colors"))
+                        .hexpand(true)
+                        .build();
+                    let accent_bg_color =
+                        Self::get_color_button(&self_, "accent_bg_color", &fl!("accent-background-color"));
+                    accent_section.add_row(&accent_bg_color);
+                    let accent_fg_color =
+                        Self::get_color_button(&self_, "accent_fg_color", &fl!("accent-foreground-color"));
+                    accent_section.add_row(&accent_fg_color);
+                    let accent_color =
+                        Self::get_color_button(&self_, "accent_color", &fl!("accent-color"));
+                    accent_section.add_row(&accent_color);
 
-                let destructive_section = ExpanderRow::builder()
-                    .name("Destructive Colors")
-                    .expanded(true)
-                    .enable_expansion(true)
-                    .title("Destructive Colors")
-                    .hexpand(true)
-                    .build();
-                let (destructive_bg_color, destructive_bg_color_button) = Self::get_color_button(
-                    &self_,
-                    "destructive_bg_color",
-                    "Destructive Background Color",
-                );
-                destructive_section.add_row(&destructive_bg_color);
-                let (destructive_fg_color, destructive_fg_color_button) = Self::get_color_button(
-                    &self_,
-                    "destructive_fg_color",
-                    "Destructive Foreground Color",
-                );
-                destructive_section.add_row(&destructive_fg_color);
-                let (destructive_color, destructive_color_button) =
-                    Self::get_color_button(&self_, "destructive_color", "Destructive Color");
-                destructive_section.add_row(&destructive_color);
+                    let destructive_section = ExpanderRow::builder()
+                        .name(&fl!("destructive-colors"))
+                        .expanded(true)
+                        .enable_expansion(true)
+                        .title(&fl!("destructive-colors"))
+                        .hexpand(true)
+                        .build();
+                    let destructive_bg_color = Self::get_color_button(
+                        &self_,
+                        "destructive_bg_color",
+                        "destructive-background-color",
+                    );
+                    destructive_section.add_row(&destructive_bg_color);
+                    let destructive_fg_color = Self::get_color_button(
+                        &self_,
+                        "destructive_fg_color",
+                        "destructive-foreground-color",
+                    );
+                    destructive_section.add_row(&destructive_fg_color);
+                    let destructive_color =
+                        Self::get_color_button(&self_, "destructive_color", &fl!("destructive-color"));
+                    destructive_section.add_row(&destructive_color);
 
-                let status_section = ExpanderRow::builder()
-                    .name("Status Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Status Colors")
-                    .hexpand(true)
-                    .build();
-                let (success_color, success_color_button) =
-                    Self::get_color_button(&self_, "success_color", "Success Color");
-                status_section.add_row(&success_color);
-                let (success_bg_color, success_bg_color_button) =
-                    Self::get_color_button(&self_, "success_bg_color", "Success Background Color");
-                status_section.add_row(&success_bg_color);
-                let (success_fg_color, success_fg_color_button) =
-                    Self::get_color_button(&self_, "success_fg_color", "Success Foreground Color");
-                status_section.add_row(&success_fg_color);
+                    let status_section = ExpanderRow::builder()
+                        .name(&fl!("status-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("status-colors"))
+                        .hexpand(true)
+                        .build();
+                    let success_color =
+                        Self::get_color_button(&self_, "success_color", &fl!("success-color"));
+                    status_section.add_row(&success_color);
+                    let success_bg_color=
+                        Self::get_color_button(&self_, "success_bg_color", &fl!("success-background-color"));
+                    status_section.add_row(&success_bg_color);
+                    let success_fg_color =
+                        Self::get_color_button(&self_, "success_fg_color", &fl!("success-foreground-color"));
+                    status_section.add_row(&success_fg_color);
 
-                let (warning_color, warning_color_button) =
-                    Self::get_color_button(&self_, "warning_color", "Warning Color");
-                status_section.add_row(&warning_color);
-                let (warning_bg_color, warning_bg_color_button) =
-                    Self::get_color_button(&self_, "warning_bg_color", "Warning Background Color");
-                status_section.add_row(&warning_bg_color);
-                let (warning_fg_color, warning_fg_color_button) =
-                    Self::get_color_button(&self_, "warning_fg_color", "Warning Foreground Color");
-                status_section.add_row(&warning_fg_color);
+                    let warning_color =
+                        Self::get_color_button(&self_, "warning_color", &fl!("warning-color"));
+                    status_section.add_row(&warning_color);
+                    let warning_bg_color =
+                        Self::get_color_button(&self_, "warning_bg_color", &fl!("warning-background-color"));
+                    status_section.add_row(&warning_bg_color);
+                    let warning_fg_color=
+                        Self::get_color_button(&self_, "warning_fg_color", &fl!("warning-foreground-color"));
+                    status_section.add_row(&warning_fg_color);
 
-                let (error_color, error_color_button) =
-                    Self::get_color_button(&self_, "error_color", "Error Color");
-                status_section.add_row(&error_color);
-                let (error_bg_color, error_bg_color_button) =
-                    Self::get_color_button(&self_, "error_bg_color", "Error Background Color");
-                status_section.add_row(&error_bg_color);
-                let (error_fg_color, error_fg_color_button) =
-                    Self::get_color_button(&self_, "error_fg_color", "Error Foreground Color");
-                status_section.add_row(&error_fg_color);
+                    let error_color =
+                        Self::get_color_button(&self_, "error_color", &fl!("error-color"));
+                    status_section.add_row(&error_color);
+                    let error_bg_color=
+                        Self::get_color_button(&self_, "error_bg_color", &fl!("error-background-color"));
+                    status_section.add_row(&error_bg_color);
+                    let error_fg_color=
+                        Self::get_color_button(&self_, "error_fg_color", &fl!("error-foreground-color"));
+                    status_section.add_row(&error_fg_color);
 
-                let content_section = ExpanderRow::builder()
-                    .name("Content Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Content Colors")
-                    .hexpand(true)
-                    .build();
-                let (view_bg_color, view_bg_color_button) =
-                    Self::get_color_button(&self_, "view_bg_color", "Widget Base Color");
-                content_section.add_row(&view_bg_color);
-                let (view_fg_color, view_fg_color_button) =
-                    Self::get_color_button(&self_, "view_fg_color", "Widget Text Color");
-                content_section.add_row(&view_fg_color);
+                    let content_section = ExpanderRow::builder()
+                        .name(&fl!("content-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("content-colors"))
+                        .hexpand(true)
+                        .build();
+                    let view_bg_color=
+                        Self::get_color_button(&self_, "view_bg_color", &fl!("widget-base-color"));
+                    content_section.add_row(&view_bg_color);
+                    let view_fg_color=
+                        Self::get_color_button(&self_, "view_fg_color", &fl!("widget-text-color"));
+                    content_section.add_row(&view_fg_color);
 
-                let window_section = ExpanderRow::builder()
-                    .name("Window Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Window Colors")
-                    .hexpand(true)
-                    .build();
-                let (window_bg_color, window_bg_color_button) =
-                    Self::get_color_button(&self_, "window_bg_color", "Window Background Color");
-                window_section.add_row(&window_bg_color);
-                let (window_fg_color, window_fg_color_button) =
-                    Self::get_color_button(&self_, "window_fg_color", "Window Foreground Color");
-                window_section.add_row(&window_fg_color);
+                    let window_section = ExpanderRow::builder()
+                        .name(&fl!("window-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("window-colors"))
+                        .hexpand(true)
+                        .build();
+                    let window_bg_color=
+                        Self::get_color_button(&self_, "window_bg_color", &fl!("window-background-color"));
+                    window_section.add_row(&window_bg_color);
+                    let window_fg_color=
+                        Self::get_color_button(&self_, "window_fg_color", &fl!("window-foreground-color"));
+                    window_section.add_row(&window_fg_color);
 
-                let headerbar_section = ExpanderRow::builder()
-                    .name("Headerbar Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Headerbar Colors")
-                    .hexpand(true)
-                    .build();
-                let (headerbar_bg_color, headerbar_bg_color_button) =
-                    Self::get_color_button(&self_, "headerbar_bg_color", "Headerbar Background Color");
-                headerbar_section.add_row(&headerbar_bg_color);
+                    let headerbar_section = ExpanderRow::builder()
+                        .name(&fl!("headerbar-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("headerbar-colors"))
+                        .hexpand(true)
+                        .build();
+                    let headerbar_bg_color =
+                        Self::get_color_button(&self_, "headerbar_bg_color", &fl!("headerbar-background-color"));
+                    headerbar_section.add_row(&headerbar_bg_color);
 
-                let (headerbar_fg_color, headerbar_fg_color_button) =
-                    Self::get_color_button(&self_, "headerbar_fg_color", "Headerbar Foreground Color");
-                headerbar_section.add_row(&headerbar_fg_color);
+                    let headerbar_fg_color =
+                        Self::get_color_button(&self_, "headerbar_fg_color", &fl!("headerbar-foreground-color"));
+                    headerbar_section.add_row(&headerbar_fg_color);
 
-                let (headerbar_border_color, headerbar_border_color_button) =
-                    Self::get_color_button(&self_, "headerbar_border_color", "Headerbar Border Color");
-                headerbar_section.add_row(&headerbar_border_color);
+                    let headerbar_border_color =
+                        Self::get_color_button(&self_, "headerbar_border_color", &fl!("headerbar-border-color"));
+                    headerbar_section.add_row(&headerbar_border_color);
 
-                let (headerbar_backdrop_color, headerbar_backdrop_color_button) = Self::get_color_button(
-                    &self_,
-                    "headerbar_backdrop_color",
-                    "Headerbar Backdrop Color",
-                );
-                headerbar_section.add_row(&headerbar_backdrop_color);
+                    let headerbar_backdrop_color = Self::get_color_button(
+                        &self_,
+                        "headerbar_backdrop_color",
+                        "headerbar-backdrop-color",
+                    );
+                    headerbar_section.add_row(&headerbar_backdrop_color);
 
-                let (headerbar_shade_color, headerbar_shade_color_button) =
-                    Self::get_color_button(&self_, "headerbar_shade_color", "Shade Color");
-                headerbar_section.add_row(&headerbar_shade_color);
+                    let headerbar_shade_color =
+                        Self::get_color_button(&self_, "headerbar_shade_color", &fl!("headerbar-shade-color"));
+                    headerbar_section.add_row(&headerbar_shade_color);
 
-                let card_section = ExpanderRow::builder()
-                    .name("Card Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Card Colors")
-                    .hexpand(true)
-                    .build();
-                let (card_bg_color, card_bg_color_button) =
-                    Self::get_color_button(&self_, "card_bg_color", "Card Background Color");
-                card_section.add_row(&card_bg_color);
-                let (card_fg_color, card_fg_color_button) =
-                    Self::get_color_button(&self_, "card_fg_color", "Card Foreground Color");
-                card_section.add_row(&card_fg_color);
-                let (card_shade_color, card_shade_color_button) =
-                    Self::get_color_button(&self_, "card_shade_color", "Card Shade Color");
-                card_section.add_row(&card_shade_color);
+                    let card_section = ExpanderRow::builder()
+                        .name(&fl!("card-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("card-colors"))
+                        .hexpand(true)
+                        .build();
+                    let card_bg_color =
+                        Self::get_color_button(&self_, "card_bg_color", &fl!("card-background-color"));
+                    card_section.add_row(&card_bg_color);
+                    let card_fg_color =
+                        Self::get_color_button(&self_, "card_fg_color", &fl!("card-foreground-color"));
+                    card_section.add_row(&card_fg_color);
+                    let card_shade_color =
+                        Self::get_color_button(&self_, "card_shade_color", &fl!("card-shade-color"));
+                    card_section.add_row(&card_shade_color);
 
-                let popover_section = ExpanderRow::builder()
-                    .name("Popover Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Popover Colors")
-                    .hexpand(true)
-                    .build();
-                let (popover_bg_color, popover_bg_color_button) =
-                    Self::get_color_button(&self_, "popover_bg_color", "Popover Background Color");
-                popover_section.add_row(&popover_bg_color);
-                let (popover_fg_color, popover_fg_color_button) =
-                    Self::get_color_button(&self_, "popover_fg_color", "Popover Foreground Color");
-                popover_section.add_row(&popover_fg_color);
+                    let popover_section = ExpanderRow::builder()
+                        .name(&fl!("popover-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("popover-colors"))
+                        .hexpand(true)
+                        .build();
+                    let popover_bg_color =
+                        Self::get_color_button(&self_, "popover_bg_color", &fl!("popover-background-color"));
+                    popover_section.add_row(&popover_bg_color);
+                    let popover_fg_color =
+                        Self::get_color_button(&self_, "popover_fg_color", &fl!("popover-foreground-color"));
+                    popover_section.add_row(&popover_fg_color);
 
-                let misc_section = ExpanderRow::builder()
-                    .name("Miscellaneous Colors")
-                    .expanded(false)
-                    .enable_expansion(true)
-                    .title("Miscellaneous Colors")
-                    .hexpand(true)
-                    .build();
-                let (scrollbar_outline_color, scrollbar_outline_color_button) =
-                    Self::get_color_button(&self_, "scrollbar_outline_color", "Scrollbar Outline Color");
-                misc_section.add_row(&scrollbar_outline_color);
-                let (shade_color, shade_color_button) =
-                    Self::get_color_button(&self_, "shade_color", "Shade Color");
-                misc_section.add_row(&shade_color);
+                    let misc_section = ExpanderRow::builder()
+                        .name(&fl!("miscellaneous-colors"))
+                        .expanded(false)
+                        .enable_expansion(true)
+                        .title(&fl!("miscellaneous-colors"))
+                        .hexpand(true)
+                        .build();
+                    let scrollbar_outline_color =
+                        Self::get_color_button(&self_, "scrollbar_outline_color", &fl!("scrollbar-outline-color"));
+                    misc_section.add_row(&scrollbar_outline_color);
+                    let shade_color =
+                        Self::get_color_button(&self_, "shade_color", &fl!("shade-color"));
+                    misc_section.add_row(&shade_color);
+
 
                     color_editor.append(&accent_section);
                     color_editor.append(&destructive_section);
@@ -602,7 +615,7 @@ impl ColorOverridesEditor {
         // TODO update alll buttons to match colors with current theme
     }
 
-    fn get_color_button(&self, id: &str, label: &str) -> (Box, ColorButton) {
+    fn get_color_button(&self, id: &str, label: &str) -> Box {
         // TODO add button for clearing color
         let imp = imp::ColorOverridesEditor::from_instance(&self);
 
@@ -658,7 +671,7 @@ impl ColorOverridesEditor {
                 },
             }
         };
-        (color_box, color_button)
+        color_box
     }
 
     fn connect_control_buttons(&self) {

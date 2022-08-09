@@ -6,9 +6,8 @@ export MANIFEST_PATH="build-aux/${APP_ID}.Devel.json"
 export FLATPAK_MODULE="user-color-editor"
 export RUNTIME_REPO="https://nightly.gnome.org/gnome-nightly.flatpakrepo"
 
-sudo flatpak-builder --keep-build-dirs --user --disable-rofiles-fuse flatpak_app --repo=repo ${BRANCH:+--default-branch=$BRANCH} ${MANIFEST_PATH} --force-clean --install --delete-build-dirs
+sudo flatpak-builder --disable-rofiles-fuse flatpak_app --repo=repo --force-clean --install --delete-build-dirs ${BRANCH:+--default-branch=$BRANCH} ${MANIFEST_PATH}
 
 sudo rm -rf .flatpak-builder/
 sudo rm -rf repo/
 sudo rm -rf flatpak_app/
-
