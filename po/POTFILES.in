@@ -1,0 +1,6 @@
+data/com.system76.UserColorEditor.desktop.in.in
+data/com.system76.UserColorEditor.gschema.xml.in
+data/com.system76.UserColorEditor.metainfo.xml.in.in
+data/resources/ui/shortcuts.ui
+data/resources/ui/window.ui
+src/application.rs
