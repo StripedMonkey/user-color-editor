@@ -12,7 +12,7 @@ use config::Config;
 pub mod colors;
 pub mod config;
 
-pub const NAME: &'static str = "adwaita-user-colors";
+pub const NAME: &'static str = "com.system76.UserColorEditor";
 pub const THEME_DIR: &'static str = "color-overrides";
 use futures::{channel::mpsc::channel, SinkExt, StreamExt};
 use notify::{RecommendedWatcher, RecursiveMode, Watcher};

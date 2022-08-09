@@ -684,8 +684,12 @@ impl ColorOverridesEditor {
                 if &theme.borrow().name != "" {
                     // TODO toast if fails
                     let _ = theme.borrow().save();
-                    if let Ok(config) = Config::load() {
-                        let _ = config.apply();
+                    if let Err(err) = Config::load().and_then(|c| c.apply()) {
+                        self_.root().and_then(|root| {
+                            root.downcast::<Window>().ok()
+                        }).map(|window| {
+                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Failed to apply custom colors. {}", err)));
+                        });
                     }
                 } else {
                     // todo replace with toast
