@@ -8,8 +8,10 @@ Build-Depends:
   rustc (>=1.57),
   cargo,
   libgtk-4-dev,
+  libadwaita-1-dev,
   meson,
   pkg-config,
+  desktop-file-utils,
 Standards-Version: 4.3.0
 Homepage: https://github.com/pop-os/user-color-editor
 
