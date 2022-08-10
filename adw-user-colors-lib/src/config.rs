@@ -19,7 +19,7 @@ pub struct Config {
     pub dark: String,
 }
 
-pub const CONFIG_NAME: &'static str = "config.ron";
+pub const CONFIG_NAME: &'static str = "config";
 
 impl Config {
     /// create a new cosmic theme config

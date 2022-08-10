@@ -1,5 +1,5 @@
 {
-    "app-id": "com.system76.UserColorEditor.Devel",
+    "app-id": "com.system76.UserColorEditor",
     "runtime": "org.gnome.Platform",
     "runtime-version": "42",
     "sdk": "org.gnome.Sdk",
@@ -8,7 +8,8 @@
     "finish-args" : [
         "--socket=fallback-x11",
         "--socket=wayland",
-        "--socket=session-bus",
+        "--talk-name=org.gtk.vfs.*",
+        "--filesystem=xdg-run/gvfsd",
         "--device=dri",
         "--env=RUST_LOG=user_color_editor=debug",
         "--env=G_MESSAGES_DEBUG=none",

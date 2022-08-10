@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
-use std::{fs::File, io::BufReader, path::PathBuf};
-
 use adw::{
     glib::{MainContext, MainLoop, Priority},
     StyleManager,

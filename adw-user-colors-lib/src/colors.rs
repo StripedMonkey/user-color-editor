@@ -2,13 +2,13 @@
 
 use std::{
     fs::File,
-    io::{BufReader, Write},
+    io::Write,
     path::{Path, PathBuf},
 };
 
 use serde::{Deserialize, Serialize};
 
-use crate::{config::Config, NAME, THEME_DIR};
+use crate::{NAME, THEME_DIR};
 
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 pub struct ColorOverrides {

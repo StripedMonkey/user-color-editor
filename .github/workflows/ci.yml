@@ -33,6 +33,6 @@ jobs:
     - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
       with:
         bundle: user-color-editor.flatpak
-        manifest-path: build-aux/com.system76.UserColorEditor.Devel.json
+        manifest-path: build-aux/com.system76.UserColorEditor.json
         run-tests: true
         cache-key: flatpak-builder-${{ github.sha }}

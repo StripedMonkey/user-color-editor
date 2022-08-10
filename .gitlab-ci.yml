@@ -9,9 +9,9 @@ flatpak:
     - flatpak
   variables:
     BUNDLE: "user-color-editor-nightly.flatpak"
-    MANIFEST_PATH: "build-aux/com.system76.UserColorEditor.Devel.json"
+    MANIFEST_PATH: "build-aux/com.system76.UserColorEditor.json"
     FLATPAK_MODULE: "user-color-editor"
-    APP_ID: "com.system76.UserColorEditor.Devel"
+    APP_ID: "com.system76.UserColorEditor"
     RUNTIME_REPO: "https://nightly.gnome.org/gnome-nightly.flatpakrepo"
   script:
     - >
