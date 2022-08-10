@@ -680,15 +680,18 @@ impl ColorOverridesEditor {
         let css_provider = &imp.css_provider;
 
         imp.save.get().unwrap().connect_clicked(
-            glib::clone!(@weak theme, @weak self as self_ => move |save| {
+            glib::clone!(@weak theme, @weak self as self_ => move |_| {
                 if &theme.borrow().name != "" {
                     // TODO toast if fails
                     let _ = theme.borrow().save();
-                    if let Err(err) = Config::load().and_then(|c| c.apply()) {
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                        Some(n) if !n.is_empty() => c.apply(),
+                        _ => Ok(()),
+                    }) {
                         self_.root().and_then(|root| {
                             root.downcast::<Window>().ok()
                         }).map(|window| {
-                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Failed to apply custom colors. {}", err)));
+                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
                         });
                     }
                 } else {
