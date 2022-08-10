@@ -116,7 +116,7 @@ impl ExampleApplication {
             gtk4::StyleContext::add_provider_for_display(
                 &display,
                 &provider,
-                gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
+                gtk4::STYLE_PROVIDER_PRIORITY_USER,
             );
         }
         provider
