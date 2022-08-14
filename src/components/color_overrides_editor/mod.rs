@@ -451,23 +451,25 @@ impl ColorOverridesEditor {
         }
         let id_clone = id.to_string();
         color_button
-        .connect_rgba_notify(glib::clone!(@weak imp.theme as theme => move |self_| {
-            let mut t = theme.borrow_mut();
-            t.set_key(&id_clone, Some(hex_from_rgba(self_.rgba()))).expect(&format!("Failed to set {id_clone}"));
+        .connect_rgba_notify(glib::clone!(@weak imp.theme as theme, @weak self as self_ => move |color_button| {
+            {
+                let mut t = theme.borrow_mut();
+                t.set_key(&id_clone, Some(hex_from_rgba(color_button.rgba()))).expect(&format!("Failed to set {id_clone}"));
+            }
+            self_.preview();
         }));
         let clear_button = Button::with_label("Clear");
         clear_button.add_css_class("destructive-action");
         clear_button.set_halign(Align::End);
         let id_clone = id.to_string();
         clear_button.connect_clicked(
-            glib::clone!(@weak color_button, @weak imp.theme as theme, @weak self as self_ => move |_| {
+            glib::clone!(@weak color_button, @weak imp.theme as theme => move |_| {
                 {
                     let mut t = theme.borrow_mut();
                     t.set_key(&id_clone, None).expect(&format!("Failed to set {id_clone}"));
                     drop(t);
                     color_button.set_rgba(&RGBA::new(0.0, 0.0, 0.0, 0.0));
                 }
-                self_.preview();
             }),
         );
         view! {
