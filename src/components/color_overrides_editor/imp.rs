@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
-use crate::components::theme_chooser_button::ThemeChooserButton;
+use crate::components::theme_import_button::ThemeImportButton;
 use gtk4::{glib, subclass::prelude::*, Box, Button, CssProvider, Entry};
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, rc::Rc};
@@ -11,8 +11,7 @@ use user_colors::colors::ColorOverrides;
 pub struct ColorOverridesEditor {
     pub name: Rc<OnceCell<Entry>>,
     pub save: Rc<OnceCell<Button>>,
-    pub preview: Rc<OnceCell<Button>>,
-    pub file_button: OnceCell<ThemeChooserButton>,
+    pub file_button: OnceCell<ThemeImportButton>,
     pub theme: Rc<RefCell<ColorOverrides>>,
     pub css_provider: Rc<OnceCell<CssProvider>>,
     pub color_editor: Rc<OnceCell<Box>>,

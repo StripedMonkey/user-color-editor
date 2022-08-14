@@ -1,7 +1,7 @@
 app-name=User Color Editor
 translator-credits = Ashley Wulber
-save = Save
-preview = Preview
+save-theme = Save theme
+load-theme = Load theme
 accent-Colors = Accent Colors
 accent-background-color = Accent Background Color
 accent-foreground-color = Accent Foreground Color

@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
 use crate::{
-    components::theme_chooser_button::ThemeChooserButton,
+    components::{
+        theme_dropdown::{ThemeDropdown, Watch},
+        theme_import_button::ThemeImportButton,
+    },
     fl,
     util::{hex_from_rgba, SRGBA},
 };
@@ -79,15 +82,16 @@ impl ColorOverridesEditor {
                     set_margin_start: 4,
                     set_margin_end: 4,
 
-                    append: file_button = &ThemeChooserButton {},
-
-                    append: preview_button = &Button {
-                        set_margin_top: 4,
-                        set_margin_bottom: 4,
-                        set_margin_start: 4,
-                        set_margin_end: 4,
-                        set_label: &fl!("preview"),
+                    append: _box = &Box {
+                        set_orientation: Orientation::Vertical,
+                        append: _label = &Label {
+                            set_text: &fl!("load-theme"),
+                        },
+                        append: load_dropdown = &ThemeDropdown::new(None),
                     },
+
+
+                    append: file_button = &ThemeImportButton {},
 
                     append: save_button = &Button {
                         set_margin_top: 4,
@@ -95,12 +99,8 @@ impl ColorOverridesEditor {
                         set_margin_start: 4,
                         set_margin_end: 4,
                         add_css_class: "suggested-action",
-                        set_label: &fl!("save")
+                        set_label: &fl!("save-theme")
                     },
-
-
-                    // TODO load image as theme
-                    // append: file_button = &ImageChooserButton {},
                 },
 
                 append = &Box {
@@ -112,9 +112,9 @@ impl ColorOverridesEditor {
                     set_margin_end: 4,
 
                     append: light_theme_label = &Label {
-                        set_text: &format!("Current Light Theme: {}", c.light),
+                        set_text: "Current Light Theme: ",
                     },
-                    append: light_button = &ThemeChooserButton {},
+                    append: light_dropdown = &ThemeDropdown::new(Some(Watch::Light)),
 
                 },
 
@@ -127,34 +127,68 @@ impl ColorOverridesEditor {
                     set_margin_end: 4,
 
                     append: dark_theme_label = &Label {
-                        set_text: &format!("Current Dark Theme: {}", c.dark),
+                        set_text: "Current Dark Theme: ",
                     },
-                    append: dark_button = &ThemeChooserButton {},
-
+                    append: dark_dropdown = &ThemeDropdown::new(Some(Watch::Dark)),
                 },
             }
         };
 
-        light_button.connect_closure(
-            "file-selected",
+        // TODO init selection with config values
+        light_dropdown.connect_closure(
+            "theme-selected",
             false,
-            closure_local!(@weak-allow-none light_theme_label, => move |_file_button: ThemeChooserButton, f: File| {
-                if let (Some(label), Some(name)) = (light_theme_label, f.basename()) {
+            closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self_, => move |_file_button: ThemeDropdown, f: File| {
+                if let (Some(_), Some(name)) = (light_theme_label, f.basename()) {
                     let name = name.file_stem().unwrap().to_string_lossy();
-                    label.set_text(&format!("Current Light Theme: {}", name));
                     user_colors::config::Config::set_active_light(&name).unwrap();
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                        Some(n) if !n.is_empty() => c.apply(),
+                        _ => Ok(()),
+                    }) {
+                        self_.and_then(|self_| self_.root()).and_then(|root| {
+                            root.downcast::<Window>().ok()
+                        }).map(|window| {
+                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
+                        });
+                    }
                 }
             }),
         );
 
-        dark_button.connect_closure(
-            "file-selected",
+        dark_dropdown.connect_closure(
+            "theme-selected",
             false,
-            closure_local!(@weak-allow-none dark_theme_label, => move |_file_button: ThemeChooserButton, f: File| {
-                if let (Some(label), Some(name)) = (dark_theme_label, f.basename()) {
+            closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self_ => move |_file_button: ThemeDropdown, f: File| {
+                if let (Some(_), Some(name)) = (dark_theme_label, f.basename()) {
                     let name = name.file_stem().unwrap().to_string_lossy();
-                    label.set_text(&format!("Current Dark Theme: {}", name));
                     user_colors::config::Config::set_active_dark(&name).unwrap();
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                        Some(n) if !n.is_empty() => c.apply(),
+                        _ => Ok(()),
+                    }) {
+                        self_.and_then(|self_| self_.root()).and_then(|root| {
+                            root.downcast::<Window>().ok()
+                        }).map(|window| {
+                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
+                        });
+                    }
+                }
+            }),
+        );
+
+        load_dropdown.connect_closure(
+            "theme-selected",
+            false,
+            closure_local!(@weak-allow-none imp.name as name, @weak-allow-none imp.theme as theme, @weak-allow-none self_ => move |_file_button: ThemeDropdown, f: File| {
+                if let (Some(theme), Some(name), Some(Ok(t))) = (theme, name, f.path().as_ref().map(|p| ColorOverrides::load(p))) {
+                    let name = name.get().unwrap();
+                    name.set_text(&t.name);
+                    theme.replace(t);
+                    if let Some(self_) = self_ {
+                        self_.set_buttons();
+                        self_.preview();
+                    }
                 }
             }),
         );
@@ -172,13 +206,11 @@ impl ColorOverridesEditor {
         // set widget state
         imp.name.set(name).unwrap();
         imp.save.set(save_button).unwrap();
-        imp.preview.set(preview_button).unwrap();
         imp.file_button.set(file_button).unwrap();
         imp.color_editor.set(color_box).unwrap();
         self_.set_buttons();
         self_.connect_name();
         self_.connect_control_buttons();
-        self_.connect_file_button();
 
         self_
     }
@@ -203,7 +235,6 @@ impl ColorOverridesEditor {
             c = color_editor.first_child();
         }
 
-        // TODO cleanup duplicate code
         let accent_section = ExpanderRow::builder()
             .name(&fl!("accent-Colors"))
             .expanded(true)
@@ -405,22 +436,6 @@ impl ColorOverridesEditor {
         color_editor.append(&misc_section);
     }
 
-    fn connect_file_button(&self) {
-        let imp = imp::ColorOverridesEditor::from_instance(&self);
-        imp.file_button.get().unwrap().connect_closure(
-            "file-selected",
-            false,
-            closure_local!(@weak-allow-none imp.name as name, @weak-allow-none imp.theme as theme, @weak-allow-none self as self_ => move |_file_button: ThemeChooserButton, f: File| {
-                if let (Some(theme), Some(name), Some(Ok(t))) = (theme, name, f.path().as_ref().map(|p| ColorOverrides::load(p))) {
-                    let name = name.get().unwrap();
-                    name.set_text(&t.name);
-                    theme.replace(t);
-                    self_.unwrap().set_buttons();
-                }
-            }),
-        );
-    }
-
     fn get_color_button(&self, id: &str, label: &str) -> Box {
         // TODO add button for clearing color
         let imp = imp::ColorOverridesEditor::from_instance(&self);
@@ -447,11 +462,14 @@ impl ColorOverridesEditor {
         clear_button.set_halign(Align::End);
         let id_clone = id.to_string();
         clear_button.connect_clicked(
-            glib::clone!(@weak color_button, @weak imp.theme as theme => move |_| {
-                let mut t = theme.borrow_mut();
-                t.set_key(&id_clone, None).expect(&format!("Failed to set {id_clone}"));
-                drop(t);
-                color_button.set_rgba(&RGBA::new(0.0, 0.0, 0.0, 0.0));
+            glib::clone!(@weak color_button, @weak imp.theme as theme, @weak self as self_ => move |_| {
+                {
+                    let mut t = theme.borrow_mut();
+                    t.set_key(&id_clone, None).expect(&format!("Failed to set {id_clone}"));
+                    drop(t);
+                    color_button.set_rgba(&RGBA::new(0.0, 0.0, 0.0, 0.0));
+                }
+                self_.preview();
             }),
         );
         view! {
@@ -515,20 +533,22 @@ impl ColorOverridesEditor {
                 }
             }),
         );
+    }
 
-        imp.preview.get().unwrap().connect_clicked(
-            glib::clone!(@weak theme, @weak css_provider => move |_| {
-                let manager = StyleManager::default();
-                let default_theme  = if manager.is_dark() {
-                    ColorOverrides::dark_default()
-                } else {
-                    ColorOverrides::light_default()
-                };
-                let preview_css = &mut default_theme.as_css();
-                preview_css.push_str(&theme.borrow().as_css());
-                css_provider.get().unwrap().load_from_data(preview_css.as_bytes());
-            }),
-        );
+    fn preview(&self) {
+        let imp = self.imp();
+        let manager = StyleManager::default();
+        let default_theme = if manager.is_dark() {
+            ColorOverrides::dark_default()
+        } else {
+            ColorOverrides::light_default()
+        };
+        let preview_css = &mut default_theme.as_css();
+        preview_css.push_str(&imp.theme.borrow().as_css());
+        imp.css_provider
+            .get()
+            .unwrap()
+            .load_from_data(preview_css.as_bytes());
     }
 
     async fn dialog<T: Display>(window: Window, msg: T) {

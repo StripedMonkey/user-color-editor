@@ -3,5 +3,5 @@
 pub use color_overrides_editor::*;
 
 mod color_overrides_editor;
-mod image_chooser_button;
-mod theme_chooser_button;
+mod theme_dropdown;
+mod theme_import_button;
