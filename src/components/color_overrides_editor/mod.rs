@@ -42,8 +42,6 @@ impl ColorOverridesEditor {
             ..set_orientation(Orientation::Vertical);
         };
 
-        let c = Config::load().unwrap_or_default();
-
         view! {
             inner = Box {
                 set_orientation: Orientation::Vertical,
@@ -501,7 +499,6 @@ impl ColorOverridesEditor {
     fn connect_control_buttons(&self) {
         let imp = imp::ColorOverridesEditor::from_instance(&self);
         let theme = &imp.theme;
-        let css_provider = &imp.css_provider;
 
         imp.save.get().unwrap().connect_clicked(
             glib::clone!(@weak theme, @weak self as self_ => move |_| {

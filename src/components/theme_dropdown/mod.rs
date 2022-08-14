@@ -4,11 +4,10 @@ use std::path::PathBuf;
 
 use gtk4::{
     ffi::GTK_INVALID_LIST_POSITION,
-    gio::{Cancellable, File, FileQueryInfoFlags, ListStore, FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME},
-    glib::{self, clone, GString},
+    gio::{File, ListStore},
+    glib::{self, clone},
     prelude::*,
-    subclass::prelude::ObjectSubclassIsExt,
-    CustomSorter, DropDown, Label, SignalListItemFactory, SingleSelection, SortListModel,
+    DropDown, Label, SignalListItemFactory,
 };
 use itertools::Itertools;
 use user_colors::{config::Config, NAME, THEME_DIR};
