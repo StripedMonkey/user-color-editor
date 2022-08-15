@@ -79,6 +79,7 @@ impl ExampleApplicationWindow {
         let self_: Self = glib::Object::new(&[("application", app)])
             .expect("Failed to create ExampleApplicationWindow");
         self_.set_child(Some(&ColorOverridesEditor::new(provider)));
+        self_.set_hide_on_close(true);
         self_
     }
 

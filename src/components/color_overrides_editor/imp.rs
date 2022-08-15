@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
 use crate::components::theme_import_button::ThemeImportButton;
+use adw::StyleManager;
 use gtk4::{glib, subclass::prelude::*, Box, Button, CssProvider, Entry};
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, rc::Rc};
@@ -15,6 +16,7 @@ pub struct ColorOverridesEditor {
     pub theme: Rc<RefCell<ColorOverrides>>,
     pub css_provider: Rc<OnceCell<CssProvider>>,
     pub color_editor: Rc<OnceCell<Box>>,
+    pub style_manager: Rc<OnceCell<StyleManager>>,
 }
 
 // The central trait for subclassing a GObject

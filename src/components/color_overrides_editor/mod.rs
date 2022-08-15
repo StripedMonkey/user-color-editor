@@ -201,11 +201,33 @@ impl ColorOverridesEditor {
 
         imp.css_provider.set(provider).unwrap();
 
+        // watch theme for changes and apply
+        let style_manager = StyleManager::default();
+        style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |_style_manager| {
+            // TODO log errors
+            let _ = Config::load().and_then(|c| match c.active_name() {
+                Some(n) if !n.is_empty() => c.apply(),
+                _ => Ok(()),
+            });
+            if let Some(theme) = Config::load().ok().and_then(|c| c.active_name()).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
+                let imp = self_.imp();
+                let preview_css = &mut theme.as_css();
+                preview_css.push_str(&imp.theme.borrow().as_css());
+                imp.css_provider
+                    .get()
+                    .unwrap()
+                    .load_from_data(preview_css.as_bytes());
+            } else {
+                self_.preview();
+            }
+        }));
+
         // set widget state
         imp.name.set(name).unwrap();
         imp.save.set(save_button).unwrap();
         imp.file_button.set(file_button).unwrap();
         imp.color_editor.set(color_box).unwrap();
+        imp.style_manager.set(style_manager).unwrap();
         self_.set_buttons();
         self_.connect_name();
         self_.connect_control_buttons();
