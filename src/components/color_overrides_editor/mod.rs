@@ -203,12 +203,15 @@ impl ColorOverridesEditor {
 
         // watch theme for changes and apply
         let style_manager = StyleManager::default();
-        style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |_style_manager| {
+        style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |style_manager| {
             // TODO log errors
-            let _ = Config::load().and_then(|c| match c.active_name() {
-                Some(n) if !n.is_empty() => c.apply(),
-                _ => Ok(()),
-            });
+            let _ = Config::load().and_then(|c| if style_manager.is_dark() && !c.dark.is_empty() ||
+                !style_manager.is_dark() && !c.light.is_empty()
+                {
+                    c.apply()
+                } else {
+                    Ok(())
+                });
             if let Some(theme) = Config::load().ok().and_then(|c| c.active_name()).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
                 let imp = self_.imp();
                 let preview_css = &mut theme.as_css();
