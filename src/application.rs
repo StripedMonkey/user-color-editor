@@ -69,6 +69,12 @@ glib::wrapper! {
         @implements gio::ActionMap, gio::ActionGroup;
 }
 
+impl Default for ExampleApplication {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ExampleApplication {
     pub fn new() -> Self {
         glib::Object::new(&[

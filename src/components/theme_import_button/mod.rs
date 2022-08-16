@@ -21,7 +21,7 @@ impl Default for ThemeImportButton {
 
 impl ThemeImportButton {
     fn connect_button_to_chooser_dialog(&self) {
-        let imp = imp::ThemeImportButton::from_instance(&self);
+        let imp = imp::ThemeImportButton::from_instance(self);
         imp.button.borrow().connect_clicked(
             glib::clone!(@weak imp.file_chooser as file_chooser, @weak self as self_ => move |_| {
                 let window = self_
@@ -49,10 +49,11 @@ impl ThemeImportButton {
                         if response != gtk4::ResponseType::Accept {return};
                         if let Some(f) = file_chooser.file() {
                             let ron_path: PathBuf = [NAME, THEME_DIR].iter().collect();
-                            if xdg::BaseDirectories::with_prefix(ron_path).ok().and_then(|ron_dirs| ron_dirs.place_data_file(f.basename()?).ok()).and_then(|dest| {
+                            let copy_err = xdg::BaseDirectories::with_prefix(ron_path).ok().and_then(|ron_dirs| ron_dirs.place_data_file(f.basename()?).ok()).and_then(|dest| {
                                 let source = f.path()?;
                                 std::fs::copy(source, dest).ok()
-                            }).is_none() {
+                            }).is_none();
+                            if copy_err {
                                 // TODO toast error
                             }
                             // TODO Toast success

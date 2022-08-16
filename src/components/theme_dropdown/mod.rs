@@ -82,7 +82,7 @@ impl ThemeDropdown {
                     let name_b = b.file_stem().map(|s| s.to_string_lossy()).unwrap_or_default();
                     name_a.cmp(&name_b)
                 });
-                model.splice(0, model.n_items(), &themes.iter().map(|f| File::for_path(f)).collect_vec());
+                model.splice(0, model.n_items(), &themes.iter().map(File::for_path).collect_vec());
             }
         }));
 
