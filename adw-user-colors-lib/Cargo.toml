@@ -18,5 +18,5 @@ pretty_env_logger = "0.4"
 xdg = "2.4.0"
 anyhow = "1.0.57"
 adw = { git = "https://gitlab.gnome.org/World/Rust/libadwaita-rs", package = "libadwaita"}
-notify = "5.0.0-pre.15"
+notify = { version = "5.0.0-pre.16", optional = true}
 futures = "0.3.21"
