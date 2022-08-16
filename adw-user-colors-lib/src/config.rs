@@ -66,8 +66,8 @@ impl Config {
         }
     }
 
-    pub fn apply(&self) -> anyhow::Result<()> {
-        let active = match self.active_name() {
+    pub fn apply(&self, style_manager: Option<&StyleManager>) -> anyhow::Result<()> {
+        let active = match self.active_name(style_manager) {
             Some(n) => n,
             _ => anyhow::bail!("No configured active overrides"),
         };
@@ -89,12 +89,15 @@ impl Config {
     }
 
     /// get the name of the active theme
-    pub fn active_name(&self) -> Option<String> {
+    pub fn active_name(&self, style_manager: Option<&StyleManager>) -> Option<String> {
         if !adw::is_initialized() {
             None
         } else {
-            let manager = StyleManager::default();
-            if manager.is_dark() {
+            let is_dark = style_manager.map(|sm| sm.is_dark()).unwrap_or_else(|| {
+                let manager = StyleManager::default();
+                manager.is_dark()
+            });
+            if is_dark {
                 Some(self.dark.clone())
             } else {
                 Some(self.light.clone())

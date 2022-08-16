@@ -132,16 +132,19 @@ impl ColorOverridesEditor {
             }
         };
 
+        // watch theme for changes and apply
+        let style_manager = StyleManager::default();
+
         // TODO init selection with config values
         light_dropdown.connect_closure(
             "theme-selected",
             false,
-            closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self_, => move |_file_button: ThemeDropdown, f: File| {
+            closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self_, @weak-allow-none style_manager=> move |_file_button: ThemeDropdown, f: File| {
                 if let (Some(_), Some(name)) = (light_theme_label, f.basename()) {
                     let name = name.file_stem().unwrap().to_string_lossy();
                     user_colors::config::Config::set_active_light(&name).unwrap();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
-                        Some(n) if !n.is_empty() => c.apply(),
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.as_ref()) {
+                        Some(n) if !n.is_empty() => c.apply(style_manager.as_ref()),
                         _ => Ok(()),
                     }) {
                         self_.and_then(|self_| self_.root()).and_then(|root| {
@@ -157,12 +160,12 @@ impl ColorOverridesEditor {
         dark_dropdown.connect_closure(
             "theme-selected",
             false,
-            closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self_ => move |_file_button: ThemeDropdown, f: File| {
+            closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
                 if let (Some(_), Some(name)) = (dark_theme_label, f.basename()) {
                     let name = name.file_stem().unwrap().to_string_lossy();
                     user_colors::config::Config::set_active_dark(&name).unwrap();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
-                        Some(n) if !n.is_empty() => c.apply(),
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.as_ref()) {
+                        Some(n) if !n.is_empty() => c.apply(style_manager.as_ref()),
                         _ => Ok(()),
                     }) {
                         self_.and_then(|self_| self_.root()).and_then(|root| {
@@ -201,18 +204,14 @@ impl ColorOverridesEditor {
 
         imp.css_provider.set(provider).unwrap();
 
-        // watch theme for changes and apply
-        let style_manager = StyleManager::default();
         style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |style_manager| {
             // TODO log errors
-            let _ = Config::load().and_then(|c| if style_manager.is_dark() && !c.dark.is_empty() ||
-                !style_manager.is_dark() && !c.light.is_empty()
-                {
-                    c.apply()
-                } else {
-                    Ok(())
-                });
-            if let Some(theme) = Config::load().ok().and_then(|c| c.active_name()).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
+            let _ = Config::load().and_then(|c| match c.active_name(Some(&style_manager)) {
+                Some(n) if n.is_empty() => c.apply(Some(&style_manager)),
+                _=> Ok(())
+            }
+            );
+            if let Some(theme) = Config::load().ok().and_then(|c| c.active_name(Some(&style_manager))).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
                 let imp = self_.imp();
                 let preview_css = &mut theme.as_css();
                 preview_css.push_str(&imp.theme.borrow().as_css());
@@ -526,14 +525,16 @@ impl ColorOverridesEditor {
     fn connect_control_buttons(&self) {
         let imp = imp::ColorOverridesEditor::from_instance(&self);
         let theme = &imp.theme;
+        let style_manager = &imp.style_manager;
 
         imp.save.get().unwrap().connect_clicked(
-            glib::clone!(@weak theme, @weak self as self_ => move |_| {
+            glib::clone!(@weak theme, @weak style_manager, @weak self as self_ => move |_| {
                 if &theme.borrow().name != "" {
                     // TODO toast if fails
+                    let style_manager = style_manager.get();
                     let _ = theme.borrow().save();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
-                        Some(n) if !n.is_empty() => c.apply(),
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager) {
+                        Some(n) if !n.is_empty() => c.apply(style_manager),
                         _ => Ok(()),
                     }) {
                         self_.root().and_then(|root| {

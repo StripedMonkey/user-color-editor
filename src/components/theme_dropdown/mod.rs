@@ -106,7 +106,7 @@ impl ThemeDropdown {
             model.splice(
                 0,
                 model.n_items(),
-                &themes.iter().map(|f| File::for_path(f)).collect_vec(),
+                &themes.iter().map(File::for_path).collect_vec(),
             );
         }
 
