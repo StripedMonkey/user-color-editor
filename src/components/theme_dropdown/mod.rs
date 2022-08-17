@@ -22,6 +22,7 @@ glib::wrapper! {
 pub enum Watch {
     Light,
     Dark,
+    Static,
 }
 
 impl ThemeDropdown {
@@ -120,10 +121,14 @@ impl ThemeDropdown {
             }
         }));
 
+        self_.append(&dropdown);
+
         if let (Some(watch), Ok(config)) = (watch, Config::load()) {
-            let selected = match watch {
-                Watch::Light => config.light,
-                Watch::Dark => config.dark,
+            let selected = match (watch, config) {
+                (Watch::Light, Config::DarkLight { light, .. }) => light.clone(),
+                (Watch::Dark, Config::DarkLight { dark, .. }) => dark.clone(),
+                (Watch::Static, Config::Static { name, .. }) => name.clone(),
+                _ => return self_,
             };
 
             if let Some(selected) = (0..model.n_items()).position(|i| {
@@ -150,7 +155,6 @@ impl ThemeDropdown {
             dropdown.set_selected(GTK_INVALID_LIST_POSITION);
         }
 
-        self_.append(&dropdown);
         self_
     }
 }

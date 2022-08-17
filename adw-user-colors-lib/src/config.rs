@@ -5,26 +5,46 @@ use adw::StyleManager;
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
     io::{prelude::*, BufReader},
     path::PathBuf,
 };
 
 /// Cosmic Theme config
-#[derive(Default, Debug, Deserialize, Serialize)]
-pub struct Config {
-    /// Selected light theme name
-    pub light: String,
-    /// Selected dark theme name
-    pub dark: String,
+#[derive(Debug, Deserialize, Serialize)]
+pub enum Config {
+    DarkLight {
+        /// Selected light theme name
+        light: String,
+        /// Selected dark theme name
+        dark: String,
+    },
+    Static {
+        name: String,
+        apply_all: bool,
+    },
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self::Static {
+            name: Default::default(),
+            apply_all: Default::default(),
+        }
+    }
 }
 
 pub const CONFIG_NAME: &'static str = "config";
 
 impl Config {
     /// create a new cosmic theme config
-    pub fn new(light: String, dark: String) -> Self {
-        Self { light, dark }
+    pub fn new_dark_light(light: String, dark: String) -> Self {
+        Self::DarkLight { light, dark }
+    }
+
+    /// create a new cosmic theme config
+    pub fn new_static(name: String, apply_all: bool) -> Self {
+        Self::Static { name, apply_all }
     }
 
     /// save the cosmic theme config
@@ -81,46 +101,139 @@ impl Config {
         let reader = BufReader::new(active_theme_file);
         let colors = ron::de::from_reader::<_, ColorOverrides>(reader)?;
         let user_color_css = &mut colors.as_css().to_string();
-        user_color_css.push_str(&format!("\n@import url(\"custom.css\");\n"));
+
         let xdg_dirs = xdg::BaseDirectories::with_prefix("gtk-4.0")?;
-        let path = xdg_dirs.place_config_file(PathBuf::from("gtk.css"))?;
+        let path = xdg_dirs.place_config_file(PathBuf::from("cosmic.css"))?;
+        // write out css
         let _ = std::fs::write(&path, &user_color_css)?;
+
+        let import = "@import url(\"cosmic.css\");";
+
+        match self {
+            Config::Static { apply_all, .. } if *apply_all => {
+                // import if necessary
+                if let Some(f) = xdg_dirs.find_config_file(PathBuf::from("gtk.css")) {
+                    // let gtk_css_import = &format!("\n{import}\n");
+                    let import_missing = {
+                        let file = File::open(&f)?;
+                        let reader = BufReader::new(file);
+                        reader
+                            .lines()
+                            .find(|l| {
+                                l.as_ref()
+                                    .ok()
+                                    .and_then(|l| if l.contains(import) { Some(()) } else { None })
+                                    .is_some()
+                            })
+                            .is_none()
+                    };
+                    if import_missing {
+                        let mut file = OpenOptions::new().write(true).append(true).open(f)?;
+
+                        writeln!(file, "\n{import}")?;
+                    }
+                } else if let Ok(f) = xdg_dirs.place_config_file(PathBuf::from("gtk.css")) {
+                    let mut file = OpenOptions::new().write(true).append(true).open(f)?;
+
+                    writeln!(file, "\n{import}")?;
+                }
+
+                Ok(())
+            }
+            _ => Config::unimport(),
+        }
+    }
+
+    fn unimport() -> anyhow::Result<()> {
+        let import = "@import url(\"cosmic.css\");";
+        let xdg_dirs = xdg::BaseDirectories::with_prefix("gtk-4.0")?;
+
+        if let Some(f) = xdg_dirs.find_config_file(PathBuf::from("gtk.css")) {
+            // let gtk_css_import = &format!("\n{import}\n");
+            let mut changed = false;
+            let new_contents: Vec<String> = {
+                let file = File::open(&f)?;
+                let reader = BufReader::new(file);
+                reader
+                    .lines()
+                    .filter_map(|l| {
+                        l.ok().and_then(|mut l| {
+                            if l == import {
+                                changed = true;
+                                None
+                            } else if let Some(start_index) = l.find(import) {
+                                changed = true;
+                                l.replace_range(start_index..start_index + import.len(), "");
+                                Some(l)
+                            } else {
+                                Some(l)
+                            }
+                        })
+                    })
+                    .collect()
+            };
+            if changed {
+                let mut file = OpenOptions::new().write(true).open(f)?;
+                let new_contents = new_contents.join("\n");
+                write!(file, "{new_contents}")?;
+                return Ok(());
+            }
+        }
         Ok(())
     }
 
     /// get the name of the active theme
     pub fn active_name(&self, style_manager: Option<&StyleManager>) -> Option<String> {
-        if !adw::is_initialized() {
-            None
-        } else {
-            let is_dark = style_manager.map(|sm| sm.is_dark()).unwrap_or_else(|| {
-                let manager = StyleManager::default();
-                manager.is_dark()
-            });
-            if is_dark {
-                Some(self.dark.clone())
-            } else {
-                Some(self.light.clone())
+        match self {
+            Config::DarkLight { light, dark } => {
+                if !adw::is_initialized() {
+                    None
+                } else {
+                    let is_dark = style_manager.map(|sm| sm.is_dark()).unwrap_or_else(|| {
+                        let manager = StyleManager::default();
+                        manager.is_dark()
+                    });
+                    if is_dark {
+                        Some(dark.clone())
+                    } else {
+                        Some(light.clone())
+                    }
+                }
             }
+            Config::Static { name, .. } => Some(name.clone()),
         }
     }
 
     pub fn set_active_light(new: &str) -> Result<()> {
         let mut self_ = Self::load()?;
-        self_.light = new.to_string();
+        match self_ {
+            Config::DarkLight { ref mut light, .. } => {
+                *light = new.to_string();
+            }
+            Config::Static { ref mut name, .. } => {
+                *name = new.to_string();
+            }
+        };
         Ok(self_.save()?)
     }
 
     pub fn set_active_dark(new: &str) -> Result<()> {
         let mut self_ = Self::load()?;
-        self_.dark = new.to_string();
+        match self_ {
+            Config::DarkLight { ref mut dark, .. } => {
+                *dark = new.to_string();
+            }
+            Config::Static { ref mut name, .. } => {
+                *name = new.to_string();
+            }
+        };
         Ok(self_.save()?)
     }
 }
 
 impl From<(ColorOverrides, ColorOverrides)> for Config {
     fn from((light, dark): (ColorOverrides, ColorOverrides)) -> Self {
-        Self {
+        Self::DarkLight {
             light: light.name,
             dark: dark.name,
         }
@@ -129,9 +242,9 @@ impl From<(ColorOverrides, ColorOverrides)> for Config {
 
 impl From<ColorOverrides> for Config {
     fn from(t: ColorOverrides) -> Self {
-        Self {
-            light: t.clone().name,
-            dark: t.name,
+        Self::Static {
+            name: t.name,
+            apply_all: false,
         }
     }
 }
