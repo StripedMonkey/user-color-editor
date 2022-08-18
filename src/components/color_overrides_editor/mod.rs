@@ -187,7 +187,7 @@ impl ColorOverridesEditor {
         style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |style_manager| {
             // TODO log errors
             let _ = Config::load().and_then(|c| match c.active_name(Some(style_manager)) {
-                Some(n) if n.is_empty() => c.apply(Some(style_manager)),
+                Some(n) if !n.is_empty() => c.apply(Some(style_manager)),
                 _=> Ok(())
             }
             );
