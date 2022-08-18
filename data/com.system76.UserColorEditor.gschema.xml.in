@@ -9,9 +9,5 @@
       <default>400</default>
       <summary>Window height</summary>
     </key>
-    <key name="is-maximized" type="b">
-      <default>false</default>
-      <summary>Window maximized state</summary>
-    </key>
   </schema>
 </schemalist>

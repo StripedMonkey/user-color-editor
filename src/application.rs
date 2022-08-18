@@ -1,9 +1,9 @@
 use log::{debug, info};
 
 use glib::clone;
+use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use gtk4::{gdk, gio, glib};
-use gtk4::{prelude::*, CssProvider};
 
 use crate::config::{APP_ID, PROFILE, VERSION};
 use crate::fl;
@@ -35,17 +35,19 @@ mod imp {
 
             if let Some(window) = self.window.get() {
                 let window = window.upgrade().unwrap();
+                window.load_window_size();
                 window.present();
                 return;
             }
-            let provider = app.setup_css();
 
-            let window = ExampleApplicationWindow::new(app, provider);
+            let window = ExampleApplicationWindow::new(app);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
-
-            app.main_window().present();
+            if let Err(_) = std::env::var("COSMIC_USER_COLOR_EDITOR_HIDDEN") {
+                app.main_window().load_window_size();
+                app.main_window().present();
+            }
         }
 
         fn startup(&self, app: &Self::Type) {
@@ -55,6 +57,7 @@ mod imp {
             // Set icons for shell
             gtk4::Window::set_default_icon_name(APP_ID);
 
+            app.setup_css();
             app.setup_gactions();
             app.setup_accels();
         }
@@ -115,17 +118,16 @@ impl ExampleApplication {
         self.set_accels_for_action("app.quit", &["<Control>q"]);
     }
 
-    fn setup_css(&self) -> CssProvider {
+    fn setup_css(&self) {
         let provider = gtk4::CssProvider::new();
         provider.load_from_resource("/com/system76/UserColorEditor/style.css");
         if let Some(display) = gdk::Display::default() {
             gtk4::StyleContext::add_provider_for_display(
                 &display,
                 &provider,
-                gtk4::STYLE_PROVIDER_PRIORITY_USER,
+                gtk4::STYLE_PROVIDER_PRIORITY_APPLICATION,
             );
         }
-        provider
     }
 
     fn show_about_dialog(&self) {

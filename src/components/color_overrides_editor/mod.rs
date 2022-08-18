@@ -12,13 +12,13 @@ use crate::{
 use adw::{traits::ExpanderRowExt, ExpanderRow, StyleManager};
 use cascade::cascade;
 use gtk4::{
-    gdk::RGBA,
+    gdk::{self, RGBA},
     gio::File,
     glib::{self, closure_local},
     prelude::*,
     subclass::prelude::*,
     Align, Box, Button, ColorButton, CssProvider, Entry, Label, MessageDialog, Orientation,
-    ScrolledWindow, Window,
+    ScrolledWindow, Switch, Window,
 };
 use relm4_macros::view;
 use std::fmt::Display;
@@ -32,7 +32,7 @@ glib::wrapper! {
 }
 
 impl ColorOverridesEditor {
-    pub fn new(provider: CssProvider) -> Self {
+    pub fn new() -> Self {
         let self_: Self = glib::Object::new(&[]).expect("Failed to create Theme Editor Widget");
 
         let imp = imp::ColorOverridesEditor::from_instance(&self_);
@@ -100,7 +100,6 @@ impl ColorOverridesEditor {
                         set_label: &fl!("save-theme")
                     },
                 },
-
                 append = &Box {
                     set_orientation: Orientation::Horizontal,
                     set_spacing: 4,
@@ -108,75 +107,58 @@ impl ColorOverridesEditor {
                     set_margin_bottom: 4,
                     set_margin_start: 4,
                     set_margin_end: 4,
-
-                    append: light_theme_label = &Label {
-                        set_text: "Current Light Theme: ",
+                    append = &Label {
+                        set_text: &fl!("dark-light-switch"),
                     },
-                    append: light_dropdown = &ThemeDropdown::new(Some(Watch::Light)),
-
+                    append: dark_light_switch = &Switch {},
                 },
 
-                append = &Box {
-                    set_orientation: Orientation::Horizontal,
-                    set_spacing: 4,
-                    set_margin_top: 4,
-                    set_margin_bottom: 4,
-                    set_margin_start: 4,
-                    set_margin_end: 4,
-
-                    append: dark_theme_label = &Label {
-                        set_text: "Current Dark Theme: ",
-                    },
-                    append: dark_dropdown = &ThemeDropdown::new(Some(Watch::Dark)),
+                append: config_section = &Box {
+                    set_orientation: Orientation::Vertical,
                 },
             }
         };
 
+        // if no valid config exists, create one
+        let config = match Config::load() {
+            Ok(c) => c,
+            Err(_) => {
+                let c = Config::default();
+                c.save().unwrap();
+                c
+            }
+        };
+        // init state of switch
+        match config {
+            Config::DarkLight { .. } => {
+                dark_light_switch.set_state(true);
+            }
+            Config::Static { .. } => {
+                dark_light_switch.set_state(true);
+            }
+        }
+        // init config widgets
+        self_.set_config_widgets(&config_section, config);
+
+        dark_light_switch.connect_state_set(glib::clone!(@weak config_section, @weak self_=> @default-return gtk4::Inhibit(false), move |_, state| {
+            // cleanup existing widgets
+            while let Some(c) = config_section.first_child() {
+                config_section.remove(&c);
+            }
+
+            if state {
+                let config = Config::new_dark_light("".into(), "".into());
+                let _ = config.save();
+                self_.set_config_widgets(&config_section, config);
+            } else {
+                let config = Config::new_static("".into(), false);
+                let _ = config.save();
+                self_.set_config_widgets(&config_section, config);
+            }
+            gtk4::Inhibit(false)
+        }));
         // watch theme for changes and apply
         let style_manager = StyleManager::default();
-
-        // TODO init selection with config values
-        light_dropdown.connect_closure(
-            "theme-selected",
-            false,
-            closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self_, @weak-allow-none style_manager=> move |_file_button: ThemeDropdown, f: File| {
-                if let (Some(_), Some(name)) = (light_theme_label, f.basename()) {
-                    let name = name.file_stem().unwrap().to_string_lossy();
-                    user_colors::config::Config::set_active_light(&name).unwrap();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.as_ref()) {
-                        Some(n) if !n.is_empty() => c.apply(style_manager.as_ref()),
-                        _ => Ok(()),
-                    }) {
-                        if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
-                            root.downcast::<Window>().ok()
-                        }) {
-                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
-                        };
-                    }
-                }
-            }),
-        );
-
-        dark_dropdown.connect_closure(
-            "theme-selected",
-            false,
-            closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
-                if let (Some(_), Some(name)) = (dark_theme_label, f.basename()) {
-                    let name = name.file_stem().unwrap().to_string_lossy();
-                    user_colors::config::Config::set_active_dark(&name).unwrap();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.as_ref()) {
-                        Some(n) if !n.is_empty() => c.apply(style_manager.as_ref()),
-                        _ => Ok(()),
-                    }) {
-                        if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
-                            root.downcast::<Window>().ok()
-                        }) {
-                            glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
-                        };
-                    }
-                }
-            }),
-        );
 
         load_dropdown.connect_closure(
             "theme-selected",
@@ -202,8 +184,6 @@ impl ColorOverridesEditor {
 
         self_.append(&scroll_window);
 
-        imp.css_provider.set(provider).unwrap();
-
         style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |style_manager| {
             // TODO log errors
             let _ = Config::load().and_then(|c| match c.active_name(Some(style_manager)) {
@@ -212,24 +192,28 @@ impl ColorOverridesEditor {
             }
             );
             if let Some(theme) = Config::load().ok().and_then(|c| c.active_name(Some(style_manager))).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
-                let imp = self_.imp();
-                let preview_css = &mut theme.as_css();
-                preview_css.push_str(&imp.theme.borrow().as_css());
-                imp.css_provider
-                    .get()
-                    .unwrap()
-                    .load_from_data(preview_css.as_bytes());
-            } else {
-                self_.preview();
+                self_.imp().theme.replace(theme);
             }
+            self_.preview();
         }));
 
+        let provider = CssProvider::new();
+        if let Some(display) = gdk::Display::default() {
+            gtk4::StyleContext::add_provider_for_display(
+                &display,
+                &provider,
+                gtk4::STYLE_PROVIDER_PRIORITY_USER,
+            );
+        }
+
         // set widget state
+        imp.css_provider.set(provider).unwrap();
         imp.name.set(name).unwrap();
         imp.save.set(save_button).unwrap();
         imp.file_button.set(file_button).unwrap();
         imp.color_editor.set(color_box).unwrap();
         imp.style_manager.set(style_manager).unwrap();
+        imp.dark_light_switch.set(dark_light_switch).unwrap();
         self_.set_buttons();
         self_.connect_name();
         self_.connect_control_buttons();
@@ -245,6 +229,173 @@ impl ColorOverridesEditor {
                 theme.borrow_mut().name = String::from(name.as_str());
             }),
         );
+    }
+
+    fn set_config_widgets(&self, config_box: &Box, config: Config) {
+        let style_manager = &self.imp().style_manager;
+
+        match config {
+            Config::DarkLight { .. } => {
+                view! {
+                    light_box = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+
+                        append: light_theme_label = &Label {
+                            set_text: &fl!("current-light-theme"),
+                        },
+                        append: light_dropdown = &ThemeDropdown::new(Some(Watch::Light)),
+
+                    }
+                };
+                view! {
+                    dark_box = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+
+                        append: dark_theme_label = &Label {
+                            set_text: &fl!("current-dark-theme"),
+                        },
+                        append: dark_dropdown = &ThemeDropdown::new(Some(Watch::Dark)),
+                    }
+                };
+                cascade! {
+                    config_box;
+                    ..append(&light_box);
+                    ..append(&dark_box);
+                };
+
+                // TODO init selection with config values
+                light_dropdown.connect_closure(
+                    "theme-selected",
+                    false,
+                    closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name), Some(style_manager)) = (light_theme_label, f.basename(), style_manager) {
+                            let name = name.file_stem().unwrap().to_string_lossy();
+                            user_colors::config::Config::set_active_light(&name).unwrap();
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
+                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                                _ => Ok(()),
+                            }) {
+                                if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
+                                    root.downcast::<Window>().ok()
+                                }) {
+                                    glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
+                                };
+                            }
+                        }
+                    }),
+                );
+
+                dark_dropdown.connect_closure(
+                    "theme-selected",
+                    false,
+                    closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name), Some(style_manager)) = (dark_theme_label, f.basename(), style_manager) {
+                            let name = name.file_stem().unwrap().to_string_lossy();
+                            user_colors::config::Config::set_active_dark(&name).unwrap();
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
+                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                                _ => Ok(()),
+                            }) {
+                                if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
+                                    root.downcast::<Window>().ok()
+                                }) {
+                                    glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
+                                };
+                            }
+                        }
+                    }),
+                );
+            }
+            Config::Static { .. } => {
+                view! {
+                    theme_box = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+
+                        append: theme_label = &Label {
+                            set_text: &fl!("current-theme"),
+                        },
+                        append: dropdown = &ThemeDropdown::new(Some(Watch::Static)),
+                    }
+                };
+                view! {
+                    switch_box = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+
+                        append = &Label {
+                            set_text: &fl!("apply-to-all-apps"),
+                        },
+                        append: switch = &Switch {},
+                    }
+                };
+                cascade! {
+                    config_box;
+                    ..append(&theme_box);
+                    ..append(&switch_box);
+                };
+
+                dropdown.connect_closure(
+                    "theme-selected",
+                    false,
+                    closure_local!(@weak-allow-none theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name), Some(style_manager)) = (theme_label, f.basename(), style_manager) {
+                            let name = name.file_stem().unwrap().to_string_lossy();
+                            user_colors::config::Config::set_active_light(&name).unwrap();
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
+                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                                _ => Ok(()),
+                            }) {
+                                if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
+                                    root.downcast::<Window>().ok()
+                                }) {
+                                    glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
+                                };
+                            }
+                        }
+                    }),
+                );
+
+                switch.connect_state_set(glib::clone!(@weak style_manager => @default-return gtk4::Inhibit(false), move|_, state| {
+                    let mut c = match Config::load() {
+                        Ok(c) => c,
+                        Err(_) => return gtk4::Inhibit(false),
+                    };
+                    match c {
+                        Config::DarkLight { .. } => return gtk4::Inhibit(false),
+                        Config::Static { ref mut apply_all, .. } => {
+                            *apply_all = state;
+                        },
+                    };
+                    let has_active = c.active_name(style_manager.get()).and_then(|n| if n.is_empty() {Some(())} else {None}).is_some();
+                    if !has_active {
+                        return gtk4::Inhibit(false)
+                    }
+                    let _ = c.save();
+                    let _ = c.apply(style_manager.get());
+
+                    gtk4::Inhibit(false)
+                }));
+            }
+        }
     }
 
     fn set_buttons(&self) {
@@ -550,13 +701,8 @@ impl ColorOverridesEditor {
 
     fn preview(&self) {
         let imp = self.imp();
-        let manager = StyleManager::default();
-        let default_theme = if manager.is_dark() {
-            ColorOverrides::dark_default()
-        } else {
-            ColorOverrides::light_default()
-        };
-        let preview_css = &mut default_theme.as_css();
+        let theme = self.imp().theme.borrow();
+        let preview_css = &mut theme.as_css();
         preview_css.push_str(&imp.theme.borrow().as_css());
         imp.css_provider
             .get()

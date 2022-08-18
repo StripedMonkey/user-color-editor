@@ -12,6 +12,7 @@ use std::{
 
 /// Cosmic Theme config
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub enum Config {
     DarkLight {
         /// Selected light theme name
@@ -27,9 +28,9 @@ pub enum Config {
 
 impl Default for Config {
     fn default() -> Self {
-        Self::Static {
-            name: Default::default(),
-            apply_all: Default::default(),
+        Self::DarkLight {
+            light: Default::default(),
+            dark: Default::default(),
         }
     }
 }
@@ -50,10 +51,10 @@ impl Config {
     /// save the cosmic theme config
     pub fn save(&self) -> Result<()> {
         let xdg_dirs = xdg::BaseDirectories::with_prefix(NAME)?;
-        if let Ok(path) = xdg_dirs.place_config_file(PathBuf::from(format!("{CONFIG_NAME}.toml"))) {
+        if let Ok(path) = xdg_dirs.place_config_file(PathBuf::from(format!("{CONFIG_NAME}.ron"))) {
             let mut f = File::create(path)?;
-            let toml = toml::ser::to_string_pretty(&self)?;
-            f.write_all(toml.as_bytes())?;
+            let ron = ron::ser::to_string_pretty(&self, Default::default())?;
+            f.write_all(ron.as_bytes())?;
             Ok(())
         } else {
             bail!("failed to save theme config")
@@ -70,17 +71,16 @@ impl Config {
         let xdg_dirs = xdg::BaseDirectories::with_prefix(NAME)?;
         let path = xdg_dirs.get_config_home();
         std::fs::create_dir_all(&path)?;
-        let path = xdg_dirs.find_config_file(PathBuf::from(format!("{CONFIG_NAME}.toml")));
+        let path = xdg_dirs.find_config_file(PathBuf::from(format!("{CONFIG_NAME}.ron")));
         if path.is_none() {
             let s = Self::default();
             s.save()?;
         }
-        if let Some(path) = xdg_dirs.find_config_file(PathBuf::from(format!("{CONFIG_NAME}.toml")))
-        {
+        if let Some(path) = xdg_dirs.find_config_file(PathBuf::from(format!("{CONFIG_NAME}.ron"))) {
             let mut f = File::open(&path)?;
             let mut s = String::new();
             f.read_to_string(&mut s)?;
-            Ok(toml::from_str(s.as_str())?)
+            Ok(ron::from_str(s.as_str())?)
         } else {
             anyhow::bail!("Failed to load config")
         }
@@ -144,7 +144,7 @@ impl Config {
         }
     }
 
-    fn unimport() -> anyhow::Result<()> {
+    pub fn unimport() -> anyhow::Result<()> {
         let import = "@import url(\"cosmic.css\");";
         let xdg_dirs = xdg::BaseDirectories::with_prefix("gtk-4.0")?;
 

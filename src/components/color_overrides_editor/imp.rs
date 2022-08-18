@@ -2,7 +2,7 @@
 
 use crate::components::theme_import_button::ThemeImportButton;
 use adw::StyleManager;
-use gtk4::{glib, subclass::prelude::*, Box, Button, CssProvider, Entry};
+use gtk4::{glib, subclass::prelude::*, Box, Button, CssProvider, Entry, Switch};
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, rc::Rc};
 use user_colors::colors::ColorOverrides;
@@ -17,6 +17,7 @@ pub struct ColorOverridesEditor {
     pub css_provider: Rc<OnceCell<CssProvider>>,
     pub color_editor: Rc<OnceCell<Box>>,
     pub style_manager: Rc<OnceCell<StyleManager>>,
+    pub dark_light_switch: Rc<OnceCell<Switch>>,
 }
 
 // The central trait for subclassing a GObject

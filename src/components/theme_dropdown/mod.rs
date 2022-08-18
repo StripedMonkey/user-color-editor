@@ -149,6 +149,8 @@ impl ThemeDropdown {
                 }
             }) {
                 dropdown.set_selected(selected.try_into().unwrap());
+            } else {
+                dropdown.set_selected(GTK_INVALID_LIST_POSITION);
             }
             // TODO watch config for changes
         } else {

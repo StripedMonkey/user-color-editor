@@ -2,6 +2,12 @@ app-name=User Color Editor
 translator-credits = Ashley Wulber
 save-theme = Save theme
 load-theme = Load theme
+current-theme = Current theme:
+apply-to-all-apps = Color all applications (Restart non-cosmic apps to apply changes)
+current-light-theme = Current light theme:
+current-dark-theme = Current dark theme:
+dark-light-switch = Enable dark / light switching
+
 accent-Colors = Accent Colors
 accent-background-color = Accent Background Color
 accent-foreground-color = Accent Foreground Color

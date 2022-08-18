@@ -1,6 +1,6 @@
+use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 use gtk4::{gio, glib};
-use gtk4::{prelude::*, CssProvider};
 
 use crate::application::ExampleApplication;
 use crate::components::ColorOverridesEditor;
@@ -46,9 +46,6 @@ mod imp {
             if PROFILE == "Devel" {
                 obj.add_css_class("devel");
             }
-
-            // Load latest window state
-            obj.load_window_size();
         }
     }
 
@@ -75,11 +72,12 @@ glib::wrapper! {
 }
 
 impl ExampleApplicationWindow {
-    pub fn new(app: &ExampleApplication, provider: CssProvider) -> Self {
+    pub fn new(app: &ExampleApplication) -> Self {
         let self_: Self = glib::Object::new(&[("application", app)])
             .expect("Failed to create ExampleApplicationWindow");
-        self_.set_child(Some(&ColorOverridesEditor::new(provider)));
+        self_.set_child(Some(&ColorOverridesEditor::new()));
         self_.set_hide_on_close(true);
+
         self_
     }
 
@@ -90,25 +88,20 @@ impl ExampleApplicationWindow {
         if let Some(settings) = imp.settings.as_ref() {
             settings.set_int("window-width", width)?;
             settings.set_int("window-height", height)?;
-
-            settings.set_boolean("is-maximized", self.is_maximized())?;
         }
 
         Ok(())
     }
 
-    fn load_window_size(&self) {
+    pub fn load_window_size(&self) {
         let imp = self.imp();
         if let Some(settings) = imp.settings.as_ref() {
             let width = settings.int("window-width");
             let height = settings.int("window-height");
-            let is_maximized = settings.boolean("is-maximized");
 
             self.set_default_size(width, height);
-
-            if is_maximized {
-                self.maximize();
-            }
+        } else {
+            self.set_default_size(500, 800);
         }
     }
 }
