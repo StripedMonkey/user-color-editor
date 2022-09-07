@@ -46,7 +46,7 @@ mod imp {
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
-            if let Err(_) = std::env::var("COSMIC_USER_COLOR_EDITOR_HIDDEN") {
+            if std::env::var("COSMIC_USER_COLOR_EDITOR_HIDDEN").is_err() {
                 app.main_window().load_window_size();
                 app.main_window().present();
             }

@@ -31,6 +31,12 @@ glib::wrapper! {
     @implements gtk4::Accessible, gtk4::Buildable, gtk4::ConstraintTarget, gtk4::Orientable;
 }
 
+impl Default for ColorOverridesEditor {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ColorOverridesEditor {
     pub fn new() -> Self {
         let self_: Self = glib::Object::new(&[]).expect("Failed to create Theme Editor Widget");
@@ -147,10 +153,7 @@ impl ColorOverridesEditor {
             dark_settings.connect_changed(
                 Some("color-scheme"),
                 glib::clone!(@weak self_ => move |settings, _| {
-                    let dark = match settings.string("color-scheme").as_str() {
-                        "prefer-light" => false,
-                        _ => true
-                    };
+                    let dark = settings.string("color-scheme").as_str() != "prefer-light";
                     let mut config: Config = self_.imp().config.borrow().clone();
                     if match config {
                         Config::DarkLight { ref mut is_dark, .. } if *is_dark != dark => {
@@ -171,10 +174,7 @@ impl ColorOverridesEditor {
                     }
                 }),
             );
-            let dark = match dark_settings.string("color-scheme").as_str() {
-                "prefer-light" => false,
-                _ => true,
-            };
+            let dark = dark_settings.string("color-scheme").as_str() != "prefer-light";
             match config {
                 Config::DarkLight {
                     ref mut is_dark, ..

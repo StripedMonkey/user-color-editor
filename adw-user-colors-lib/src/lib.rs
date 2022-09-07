@@ -5,5 +5,5 @@ pub mod config;
 #[cfg(feature = "notify")]
 pub mod notify;
 
-pub const NAME: &'static str = "com.system76.UserColorEditor";
-pub const THEME_DIR: &'static str = "color-overrides";
+pub const NAME: &str = "com.system76.UserColorEditor";
+pub const THEME_DIR: &str = "color-overrides";

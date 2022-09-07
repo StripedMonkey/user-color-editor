@@ -41,7 +41,7 @@ impl Default for Config {
     }
 }
 
-pub const CONFIG_NAME: &'static str = "config";
+pub const CONFIG_NAME: &str = "config";
 
 impl Config {
     /// create a new cosmic theme config
@@ -122,11 +122,11 @@ impl Config {
             _ => colors,
         };
 
-        let user_color_css = &mut colors.as_gtk_css().to_string();
+        let user_color_css = &mut colors.as_gtk_css();
         let xdg_dirs = xdg::BaseDirectories::with_prefix("gtk-4.0")?;
         let path = xdg_dirs.place_config_file(PathBuf::from("cosmic.css"))?;
         // write out css
-        let _ = std::fs::write(&path, &user_color_css)?;
+        std::fs::write(&path, &user_color_css)?;
 
         let import = "@import url(\"cosmic.css\");";
 
@@ -138,15 +138,12 @@ impl Config {
                     let import_missing = {
                         let file = File::open(&f)?;
                         let reader = BufReader::new(file);
-                        reader
-                            .lines()
-                            .find(|l| {
-                                l.as_ref()
-                                    .ok()
-                                    .and_then(|l| if l.contains(import) { Some(()) } else { None })
-                                    .is_some()
-                            })
-                            .is_none()
+                        !reader.lines().any(|l| {
+                            l.as_ref()
+                                .ok()
+                                .and_then(|l| if l.contains(import) { Some(()) } else { None })
+                                .is_some()
+                        })
                     };
                     if import_missing {
                         let mut file = OpenOptions::new().write(true).append(true).open(f)?;
@@ -259,7 +256,7 @@ impl Config {
                 *name = new.to_string();
             }
         };
-        Ok(self_.save()?)
+        self_.save()
     }
 
     pub fn set_active_dark(new: &str) -> Result<()> {
@@ -272,7 +269,7 @@ impl Config {
                 *name = new.to_string();
             }
         };
-        Ok(self_.save()?)
+        self_.save()
     }
 }
 

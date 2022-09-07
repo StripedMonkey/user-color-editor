@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
+use std::fmt::Write as _;
 use std::{
     fs::File,
     io::Write,
     path::{Path, PathBuf},
-};
+}; // import without risk of name clashing
 
 use serde::{Deserialize, Serialize};
 
 use crate::{NAME, THEME_DIR};
 
-#[derive(Debug, Default, Deserialize, Serialize, Clone)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, Hash, PartialEq, Eq)]
 pub struct ColorOverrides {
     /// name
     pub name: String,
@@ -230,189 +231,229 @@ impl ColorOverrides {
     pub fn as_gtk_css(&self) -> String {
         let mut user_color_css = String::new();
         if let Some(accent_bg_color) = self.accent_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color accent_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color accent_bg_color {};",
                 &accent_bg_color
-            ));
+            );
         }
         if let Some(accent_fg_color) = self.accent_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color accent_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color accent_fg_color {};",
                 &accent_fg_color
-            ));
+            );
         }
         if let Some(accent_color) = self.accent_color.as_ref() {
-            user_color_css.push_str(&format!("@define-color accent_color {};\n", &accent_color));
+            let _ = writeln!(
+                user_color_css,
+                "@define-color accent_color {};",
+                &accent_color
+            );
         }
 
         if let Some(destructive_bg_color) = self.destructive_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color destructive_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color destructive_bg_color {};",
                 &destructive_bg_color
-            ));
+            );
         }
         if let Some(destructive_fg_color) = self.destructive_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color destructive_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color destructive_fg_color {};",
                 &destructive_fg_color
-            ));
+            );
         }
         if let Some(destructive_color) = self.destructive_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color destructive_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color destructive_color {};",
                 &destructive_color
-            ));
+            );
         }
 
         if let Some(success_color) = self.success_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color success_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color success_color {};",
                 &success_color
-            ));
+            );
         }
         if let Some(success_bg_color) = self.success_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color success_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color success_bg_color {};",
                 &success_bg_color
-            ));
+            );
         }
         if let Some(success_fg_color) = self.success_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color success_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color success_fg_color {};",
                 &success_fg_color
-            ));
+            );
         }
         if let Some(warning_color) = self.warning_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color warning_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color warning_color {};",
                 &warning_color
-            ));
+            );
         }
         if let Some(warning_bg_color) = self.warning_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color warning_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color warning_bg_color {};",
                 &warning_bg_color
-            ));
+            );
         }
         if let Some(warning_fg_color) = self.warning_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color warning_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color warning_fg_color {};",
                 &warning_fg_color
-            ));
+            );
         }
         if let Some(error_color) = self.error_color.as_ref() {
-            user_color_css.push_str(&format!("@define-color error_color {};\n", &error_color));
+            let _ = writeln!(
+                user_color_css,
+                "@define-color error_color {};",
+                &error_color
+            );
         }
         if let Some(error_bg_color) = self.error_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color error_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color error_bg_color {};",
                 &error_bg_color
-            ));
+            );
         }
         if let Some(error_fg_color) = self.error_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color error_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color error_fg_color {};",
                 &error_fg_color
-            ));
+            );
         }
 
         if let Some(window_bg_color) = self.window_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color window_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color window_bg_color {};",
                 &window_bg_color
-            ));
+            );
         }
         if let Some(window_fg_color) = self.window_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color window_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color window_fg_color {};",
                 &window_fg_color
-            ));
+            );
         }
 
         if let Some(view_bg_color) = self.view_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color view_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color view_bg_color {};",
                 &view_bg_color
-            ));
+            );
         }
         if let Some(view_fg_color) = self.view_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color view_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color view_fg_color {};",
                 &view_fg_color
-            ));
+            );
         }
         if let Some(shade_color) = self.shade_color.as_ref() {
-            user_color_css.push_str(&format!("@define-color shade_color {};\n", &shade_color));
+            let _ = writeln!(
+                user_color_css,
+                "@define-color shade_color {};",
+                &shade_color
+            );
         }
 
         if let Some(headerbar_bg_color) = self.headerbar_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color headerbar_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color headerbar_bg_color {};",
                 &headerbar_bg_color
-            ));
+            );
         }
         if let Some(headerbar_fg_color) = self.headerbar_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color headerbar_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color headerbar_fg_color {};",
                 &headerbar_fg_color
-            ));
+            );
         }
         if let Some(headerbar_border_color) = self.headerbar_border_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color headerbar_border_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color headerbar_border_color {};",
                 &headerbar_border_color
-            ));
+            );
         }
         if let Some(headerbar_backdrop_color) = self.headerbar_backdrop_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color headerbar_backdrop_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color headerbar_backdrop_color {};",
                 &headerbar_backdrop_color
-            ));
+            );
         }
         if let Some(headerbar_shade_color) = self.headerbar_shade_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color headerbar_shade_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color headerbar_shade_color {};",
                 &headerbar_shade_color
-            ));
+            );
         }
 
         if let Some(card_bg_color) = self.card_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color card_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color card_bg_color {};",
                 &card_bg_color
-            ));
+            );
         }
         if let Some(card_fg_color) = self.card_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color card_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color card_fg_color {};",
                 &card_fg_color
-            ));
+            );
         }
         if let Some(card_shade_color) = self.card_shade_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color card_shade_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color card_shade_color {};",
                 &card_shade_color
-            ));
+            );
         }
 
         if let Some(popover_bg_color) = self.popover_bg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color popover_bg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color popover_bg_color {};",
                 &popover_bg_color
-            ));
+            );
         }
         if let Some(popover_fg_color) = self.popover_fg_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color popover_fg_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color popover_fg_color {};",
                 &popover_fg_color
-            ));
+            );
         }
 
         if let Some(scrollbar_outline_color) = self.scrollbar_outline_color.as_ref() {
-            user_color_css.push_str(&format!(
-                "@define-color scrollbar_outline_color {};\n",
+            let _ = writeln!(
+                user_color_css,
+                "@define-color scrollbar_outline_color {};",
                 &scrollbar_outline_color
-            ));
+            );
         }
         user_color_css
     }

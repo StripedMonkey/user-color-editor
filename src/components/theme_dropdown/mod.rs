@@ -125,9 +125,9 @@ impl ThemeDropdown {
 
         if let (Some(watch), Ok(config)) = (watch, Config::load()) {
             let selected = match (watch, config) {
-                (Watch::Light, Config::DarkLight { light, .. }) => light.clone(),
-                (Watch::Dark, Config::DarkLight { dark, .. }) => dark.clone(),
-                (Watch::Static, Config::Static { name, .. }) => name.clone(),
+                (Watch::Light, Config::DarkLight { light, .. }) => light,
+                (Watch::Dark, Config::DarkLight { dark, .. }) => dark,
+                (Watch::Static, Config::Static { name, .. }) => name,
                 _ => return self_,
             };
 
