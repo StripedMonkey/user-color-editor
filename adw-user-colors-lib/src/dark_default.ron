@@ -1,5 +1,6 @@
 (
-    name:"dark_default",accent_bg_color:Some("#3584e4"),
+    name:"dark_default",
+    accent_bg_color:Some("#3584e4"),
     accent_fg_color:Some("#ffffff"),
     accent_color:Some("#78aeed"),
     destructive_bg_color:Some("#c01c28"),
