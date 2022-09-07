@@ -23,7 +23,7 @@ impl ObjectImpl for ThemeDropdown {
     fn signals() -> &'static [Signal] {
         static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
             vec![Signal::builder("theme-selected")
-                .param_types(&[File::static_type()])
+                .param_types(vec![File::static_type()])
                 .return_type::<()>()
                 .build()]
         });
