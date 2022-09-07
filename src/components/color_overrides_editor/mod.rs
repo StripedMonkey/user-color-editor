@@ -9,11 +9,11 @@ use crate::{
     util::{hex_from_rgba, SRGBA},
 };
 
-use adw::{traits::ExpanderRowExt, ExpanderRow, StyleManager};
+use adw::{traits::ExpanderRowExt, ExpanderRow};
 use cascade::cascade;
 use gtk4::{
     gdk::{self, RGBA},
-    gio::File,
+    gio::{self, File},
     glib::{self, closure_local},
     prelude::*,
     subclass::prelude::*,
@@ -120,9 +120,10 @@ impl ColorOverridesEditor {
         };
 
         // if no valid config exists, create one
-        let config = match Config::load() {
+        let mut config = match Config::load() {
             Ok(c) => c,
-            Err(_) => {
+            Err(e) => {
+                dbg!(e);
                 let c = Config::default();
                 c.save().unwrap();
                 c
@@ -134,11 +135,109 @@ impl ColorOverridesEditor {
                 dark_light_switch.set_state(true);
             }
             Config::Static { .. } => {
-                dark_light_switch.set_state(true);
+                dark_light_switch.set_state(false);
             }
         }
+
+        let settings_source = gio::SettingsSchemaSource::default();
+        if let Some(dark_settings) = settings_source
+            .as_ref()
+            .and_then(|s| s.lookup("org.gnome.desktop.interface", true))
+            .map(|_| gio::Settings::new("org.gnome.desktop.interface"))
+        {
+            dark_settings.connect_changed(
+                Some("color-scheme"),
+                glib::clone!(@weak self_ => move |settings, _| {
+                    let dark = match settings.string("color-scheme").as_str() {
+                        "prefer-light" => false,
+                        _ => true
+                    };
+                    let mut config: Config = self_.imp().config.borrow().clone();
+                    if match config {
+                        Config::DarkLight { ref mut is_dark, .. } if *is_dark != dark => {
+                            dbg!(&is_dark, &dark);
+                            *is_dark = dark;
+                            true
+                        },
+                        _ => false
+                    } {
+                        if let Some(name) = config.active_name() {
+                            if let Ok(palette) = ColorOverrides::load_from_name(&name) {
+                                dbg!(&palette);
+                                self_.imp().theme.replace(palette);
+                            }
+                            let _ = config.apply_gtk4();
+                        }
+                        let _ = config.save();
+                        self_.imp().config.replace(config);
+                        self_.preview();
+                    }
+                }),
+            );
+            let dark = match dark_settings.string("color-scheme").as_str() {
+                "prefer-light" => false,
+                _ => true,
+            };
+            match config {
+                Config::DarkLight {
+                    ref mut is_dark, ..
+                } if *is_dark != dark => {
+                    *is_dark = dark;
+                    let _ = match config.active_name() {
+                        Some(n) if !n.is_empty() => config.apply_gtk4(),
+                        _ => Ok(()),
+                    };
+                }
+                _ => {}
+            }
+            imp.dark_settings.set(dark_settings).unwrap();
+        };
+
+        if let Some(hc_settings) = settings_source
+            .and_then(|s| s.lookup("org.gnome.desktop.a11y.interface", true))
+            .map(|_| gio::Settings::new("org.gnome.desktop.a11y.interface"))
+        {
+            hc_settings.connect_changed(Some("high-contrast"), glib::clone!(@weak self_ => move |settings, _| {
+                let high_contrast = settings.boolean("high-contrast");
+
+                let mut config: Config = self_.imp().config.borrow().clone();
+                if match config {
+                    Config::DarkLight { ref mut is_high_contrast, .. } if *is_high_contrast != high_contrast => {
+                        *is_high_contrast = high_contrast;
+                        if let Some(name) = config.active_name() {
+                            if let Ok(palette) = ColorOverrides::load_from_name(&name) {
+                                self_.imp().theme.replace(palette);
+                            }
+                            let _ = config.save();
+                            let _ = config.apply_gtk4();
+                        }
+                        true
+                    },
+                    _ => false
+                } {
+                    self_.imp().config.replace(config);
+                    self_.preview();
+                }
+            }));
+            let high_contrast = hc_settings.boolean("high-contrast");
+            match config {
+                Config::DarkLight {
+                    ref mut is_high_contrast,
+                    ..
+                } if *is_high_contrast != high_contrast => {
+                    *is_high_contrast = high_contrast;
+                    let _ = match config.active_name() {
+                        Some(n) if !n.is_empty() => config.apply_gtk4(),
+                        _ => Ok(()),
+                    };
+                }
+                _ => {}
+            }
+            imp.high_contrast_settings.set(hc_settings).unwrap();
+        };
+
         // init config widgets
-        self_.set_config_widgets(&config_section, config);
+        self_.set_config_widgets(&config_section, &config);
 
         dark_light_switch.connect_state_set(glib::clone!(@weak config_section, @weak self_=> @default-return gtk4::Inhibit(false), move |_, state| {
             // cleanup existing widgets
@@ -146,19 +245,18 @@ impl ColorOverridesEditor {
                 config_section.remove(&c);
             }
 
+            // TODO set dark light & high contrast depending on gsettings
             if state {
-                let config = Config::new_dark_light("".into(), "".into());
+                let config = Config::new_dark_light(true, false, "".into(), "".into());
                 let _ = config.save();
-                self_.set_config_widgets(&config_section, config);
+                self_.set_config_widgets(&config_section, &config);
             } else {
                 let config = Config::new_static("".into(), false);
                 let _ = config.save();
-                self_.set_config_widgets(&config_section, config);
+                self_.set_config_widgets(&config_section, &config);
             }
             gtk4::Inhibit(false)
         }));
-        // watch theme for changes and apply
-        let style_manager = StyleManager::default();
 
         load_dropdown.connect_closure(
             "theme-selected",
@@ -184,19 +282,6 @@ impl ColorOverridesEditor {
 
         self_.append(&scroll_window);
 
-        style_manager.connect_dark_notify(glib::clone!(@weak self_ => move |style_manager| {
-            // TODO log errors
-            let _ = Config::load().and_then(|c| match c.active_name(Some(style_manager)) {
-                Some(n) if !n.is_empty() => c.apply(Some(style_manager)),
-                _=> Ok(())
-            }
-            );
-            if let Some(theme) = Config::load().ok().and_then(|c| c.active_name(Some(style_manager))).as_ref().and_then(|name| ColorOverrides::load_from_name(name).ok()) {
-                self_.imp().theme.replace(theme);
-            }
-            self_.preview();
-        }));
-
         let provider = CssProvider::new();
         if let Some(display) = gdk::Display::default() {
             gtk4::StyleContext::add_provider_for_display(
@@ -212,7 +297,7 @@ impl ColorOverridesEditor {
         imp.save.set(save_button).unwrap();
         imp.file_button.set(file_button).unwrap();
         imp.color_editor.set(color_box).unwrap();
-        imp.style_manager.set(style_manager).unwrap();
+        imp.config.replace(config);
         imp.dark_light_switch.set(dark_light_switch).unwrap();
         self_.set_buttons();
         self_.connect_name();
@@ -231,9 +316,7 @@ impl ColorOverridesEditor {
         );
     }
 
-    fn set_config_widgets(&self, config_box: &Box, config: Config) {
-        let style_manager = &self.imp().style_manager;
-
+    fn set_config_widgets(&self, config_box: &Box, config: &Config) {
         match config {
             Config::DarkLight { .. } => {
                 view! {
@@ -277,12 +360,15 @@ impl ColorOverridesEditor {
                 light_dropdown.connect_closure(
                     "theme-selected",
                     false,
-                    closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
-                        if let (Some(_), Some(name), Some(style_manager)) = (light_theme_label, f.basename(), style_manager) {
+                    closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self as self_  => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name)) = (light_theme_label, f.basename()) {
                             let name = name.file_stem().unwrap().to_string_lossy();
                             user_colors::config::Config::set_active_light(&name).unwrap();
-                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
-                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                                Some(_) => {
+                                    let _ = c.save();
+                                    c.apply_gtk4()
+                                },
                                 _ => Ok(()),
                             }) {
                                 if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
@@ -298,12 +384,15 @@ impl ColorOverridesEditor {
                 dark_dropdown.connect_closure(
                     "theme-selected",
                     false,
-                    closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
-                        if let (Some(_), Some(name), Some(style_manager)) = (dark_theme_label, f.basename(), style_manager) {
+                    closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self as self_ => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name)) = (dark_theme_label, f.basename()) {
                             let name = name.file_stem().unwrap().to_string_lossy();
                             user_colors::config::Config::set_active_dark(&name).unwrap();
-                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
-                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                                Some(_) => {
+                                    let _ = c.save();
+                                    c.apply_gtk4()
+                                },
                                 _ => Ok(()),
                             }) {
                                 if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
@@ -356,12 +445,12 @@ impl ColorOverridesEditor {
                 dropdown.connect_closure(
                     "theme-selected",
                     false,
-                    closure_local!(@weak-allow-none theme_label, @weak-allow-none self as self_, @weak-allow-none style_manager => move |_file_button: ThemeDropdown, f: File| {
-                        if let (Some(_), Some(name), Some(style_manager)) = (theme_label, f.basename(), style_manager) {
+                    closure_local!(@weak-allow-none theme_label, @weak-allow-none self as self_ => move |_file_button: ThemeDropdown, f: File| {
+                        if let (Some(_), Some(name)) = (theme_label, f.basename()) {
                             let name = name.file_stem().unwrap().to_string_lossy();
                             user_colors::config::Config::set_active_light(&name).unwrap();
-                            if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager.get()) {
-                                Some(n) if !n.is_empty() => c.apply(style_manager.get()),
+                            if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                                Some(n) if !n.is_empty() => c.apply_gtk4(),
                                 _ => Ok(()),
                             }) {
                                 if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
@@ -374,26 +463,27 @@ impl ColorOverridesEditor {
                     }),
                 );
 
-                switch.connect_state_set(glib::clone!(@weak style_manager => @default-return gtk4::Inhibit(false), move|_, state| {
+                switch.connect_state_set(move |_, state| {
                     let mut c = match Config::load() {
                         Ok(c) => c,
                         Err(_) => return gtk4::Inhibit(false),
                     };
                     match c {
                         Config::DarkLight { .. } => return gtk4::Inhibit(false),
-                        Config::Static { ref mut apply_all, .. } => {
+                        Config::Static {
+                            ref mut apply_all, ..
+                        } => {
                             *apply_all = state;
-                        },
+                        }
                     };
-                    let has_active = c.active_name(style_manager.get()).and_then(|n| if n.is_empty() {Some(())} else {None}).is_some();
-                    if !has_active {
-                        return gtk4::Inhibit(false)
+
+                    if c.active_name().is_some() {
+                        let _ = c.save();
+                        let _ = c.apply_gtk4();
                     }
-                    let _ = c.save();
-                    let _ = c.apply(style_manager.get());
 
                     gtk4::Inhibit(false)
-                }));
+                });
             }
         }
     }
@@ -664,16 +754,14 @@ impl ColorOverridesEditor {
     fn connect_control_buttons(&self) {
         let imp = imp::ColorOverridesEditor::from_instance(self);
         let theme = &imp.theme;
-        let style_manager = &imp.style_manager;
 
         imp.save.get().unwrap().connect_clicked(
-            glib::clone!(@weak theme, @weak style_manager, @weak self as self_ => move |_| {
+            glib::clone!(@weak theme, @weak self as self_ => move |_| {
                 if !theme.borrow().name.is_empty() {
                     // TODO toast if fails
-                    let style_manager = style_manager.get();
                     let _ = theme.borrow().save();
-                    if let Err(err) = Config::load().and_then(|c| match c.active_name(style_manager) {
-                        Some(n) if !n.is_empty() => c.apply(style_manager),
+                    if let Err(err) = Config::load().and_then(|c| match c.active_name() {
+                        Some(n) if !n.is_empty() => c.apply_gtk4(),
                         _ => Ok(()),
                     }) {
                         if let Some(window) = self_.root().and_then(|root| {
@@ -702,8 +790,8 @@ impl ColorOverridesEditor {
     fn preview(&self) {
         let imp = self.imp();
         let theme = self.imp().theme.borrow();
-        let preview_css = &mut theme.as_css();
-        preview_css.push_str(&imp.theme.borrow().as_css());
+        let preview_css = &mut theme.as_gtk_css();
+        preview_css.push_str(&imp.theme.borrow().as_gtk_css());
         imp.css_provider
             .get()
             .unwrap()

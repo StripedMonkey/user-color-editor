@@ -12,11 +12,11 @@ mod imp {
 
     use super::*;
 
-    pub struct ExampleApplicationWindow {
+    pub struct UserColorEditorWindow {
         pub settings: Option<gio::Settings>,
     }
 
-    impl Default for ExampleApplicationWindow {
+    impl Default for UserColorEditorWindow {
         fn default() -> Self {
             Self {
                 settings: SettingsSchemaSource::default()
@@ -27,9 +27,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for ExampleApplicationWindow {
-        const NAME: &'static str = "ExampleApplicationWindow";
-        type Type = super::ExampleApplicationWindow;
+    impl ObjectSubclass for UserColorEditorWindow {
+        const NAME: &'static str = "UserColorEditorWindow";
+        type Type = super::UserColorEditorWindow;
         type ParentType = gtk4::ApplicationWindow;
 
         fn class_init(_: &mut Self::Class) {}
@@ -38,7 +38,7 @@ mod imp {
         fn instance_init(_: &glib::subclass::InitializingObject<Self>) {}
     }
 
-    impl ObjectImpl for ExampleApplicationWindow {
+    impl ObjectImpl for UserColorEditorWindow {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
 
@@ -49,8 +49,8 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for ExampleApplicationWindow {}
-    impl WindowImpl for ExampleApplicationWindow {
+    impl WidgetImpl for UserColorEditorWindow {}
+    impl WindowImpl for UserColorEditorWindow {
         // Save window state on delete event
         fn close_request(&self, window: &Self::Type) -> gtk4::Inhibit {
             if let Err(err) = window.save_window_size() {
@@ -62,19 +62,19 @@ mod imp {
         }
     }
 
-    impl ApplicationWindowImpl for ExampleApplicationWindow {}
+    impl ApplicationWindowImpl for UserColorEditorWindow {}
 }
 
 glib::wrapper! {
-    pub struct ExampleApplicationWindow(ObjectSubclass<imp::ExampleApplicationWindow>)
+    pub struct UserColorEditorWindow(ObjectSubclass<imp::UserColorEditorWindow>)
         @extends gtk4::Widget, gtk4::Window, gtk4::ApplicationWindow,
         @implements gio::ActionMap, gio::ActionGroup, gtk4::Root;
 }
 
-impl ExampleApplicationWindow {
+impl UserColorEditorWindow {
     pub fn new(app: &ExampleApplication) -> Self {
         let self_: Self = glib::Object::new(&[("application", app)])
-            .expect("Failed to create ExampleApplicationWindow");
+            .expect("Failed to create UserColorEditorWindow");
         self_.set_child(Some(&ColorOverridesEditor::new()));
         self_.set_hide_on_close(true);
 

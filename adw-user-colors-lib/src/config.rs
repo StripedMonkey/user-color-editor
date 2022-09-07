@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MPL-2.0-only
 
 use crate::{colors::ColorOverrides, NAME, THEME_DIR};
-use adw::StyleManager;
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -11,10 +10,14 @@ use std::{
 };
 
 /// Cosmic Theme config
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[serde(deny_unknown_fields)]
 pub enum Config {
     DarkLight {
+        /// whether high contrast mode is activated
+        is_high_contrast: bool,
+        /// active
+        is_dark: bool,
         /// Selected light theme name
         light: String,
         /// Selected dark theme name
@@ -28,9 +31,12 @@ pub enum Config {
 
 impl Default for Config {
     fn default() -> Self {
+        // TODO load gsettings to determine if dark light or high contrast?
         Self::DarkLight {
+            is_dark: true,
             light: Default::default(),
             dark: Default::default(),
+            is_high_contrast: Default::default(),
         }
     }
 }
@@ -39,8 +45,13 @@ pub const CONFIG_NAME: &'static str = "config";
 
 impl Config {
     /// create a new cosmic theme config
-    pub fn new_dark_light(light: String, dark: String) -> Self {
-        Self::DarkLight { light, dark }
+    pub fn new_dark_light(is_dark: bool, high_contrast: bool, light: String, dark: String) -> Self {
+        Self::DarkLight {
+            is_dark,
+            light,
+            dark,
+            is_high_contrast: high_contrast,
+        }
     }
 
     /// create a new cosmic theme config
@@ -86,8 +97,10 @@ impl Config {
         }
     }
 
-    pub fn apply(&self, style_manager: Option<&StyleManager>) -> anyhow::Result<()> {
-        let active = match self.active_name(style_manager) {
+    #[cfg(feature = "gtk4")]
+    /// applies the active config to to xdg-config-dir/gtk-4.0/cosmic.css
+    pub fn apply_gtk4(&self) -> anyhow::Result<()> {
+        let active = match self.active_name() {
             Some(n) => n,
             _ => anyhow::bail!("No configured active overrides"),
         };
@@ -99,9 +112,17 @@ impl Config {
         };
         let active_theme_file = File::open(active_theme_path)?;
         let reader = BufReader::new(active_theme_file);
-        let colors = ron::de::from_reader::<_, ColorOverrides>(reader)?;
-        let user_color_css = &mut colors.as_css().to_string();
 
+        let colors = ron::de::from_reader::<_, ColorOverrides>(reader)?;
+        let colors = match &self {
+            Config::DarkLight {
+                is_high_contrast: high_contrast,
+                ..
+            } if *high_contrast => colors.to_high_contrast(),
+            _ => colors,
+        };
+
+        let user_color_css = &mut colors.as_gtk_css().to_string();
         let xdg_dirs = xdg::BaseDirectories::with_prefix("gtk-4.0")?;
         let path = xdg_dirs.place_config_file(PathBuf::from("cosmic.css"))?;
         // write out css
@@ -183,22 +204,28 @@ impl Config {
     }
 
     /// get the name of the active theme
-    pub fn active_name(&self, style_manager: Option<&StyleManager>) -> Option<String> {
+    pub fn active_name(&self) -> Option<String> {
         match self {
-            Config::DarkLight { light, dark } => {
-                if !adw::is_initialized() {
-                    None
+            Config::DarkLight {
+                light,
+                dark,
+                is_dark,
+                ..
+            } => {
+                if *is_dark && !dark.is_empty() {
+                    Some(dark.clone())
+                } else if !is_dark && !dark.is_empty() {
+                    Some(light.clone())
                 } else {
-                    let is_dark = style_manager.map(|sm| sm.is_dark()).unwrap_or_else(|| {
-                        let manager = StyleManager::default();
-                        manager.is_dark()
-                    });
-                    if is_dark {
-                        Some(dark.clone())
-                    } else {
-                        Some(light.clone())
-                    }
+                    None
                 }
+                // if *high_contrast {
+                //     if let Some(palette) = palette.take() {
+                //         // TODO enforce high contrast constraints
+                //         *palette = palette.to_high_contrast();
+                //         todo!()
+                //     }
+                // }
             }
             Config::Static { name, .. } => Some(name.clone()),
         }
@@ -234,6 +261,8 @@ impl Config {
 impl From<(ColorOverrides, ColorOverrides)> for Config {
     fn from((light, dark): (ColorOverrides, ColorOverrides)) -> Self {
         Self::DarkLight {
+            is_dark: true,
+            is_high_contrast: false,
             light: light.name,
             dark: dark.name,
         }

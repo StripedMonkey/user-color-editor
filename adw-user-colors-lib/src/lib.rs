@@ -2,7 +2,7 @@
 
 pub mod colors;
 pub mod config;
-#[cfg(feature = "gtk4")]
+#[cfg(feature = "notify")]
 pub mod notify;
 
 pub const NAME: &'static str = "com.system76.UserColorEditor";

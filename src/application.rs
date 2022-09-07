@@ -7,16 +7,18 @@ use gtk4::{gdk, gio, glib};
 
 use crate::config::{APP_ID, PROFILE, VERSION};
 use crate::fl;
-use crate::window::ExampleApplicationWindow;
+use crate::window::UserColorEditorWindow;
 
 mod imp {
+    use crate::window::UserColorEditorWindow;
+
     use super::*;
     use glib::WeakRef;
     use once_cell::sync::OnceCell;
 
     #[derive(Debug, Default)]
     pub struct ExampleApplication {
-        pub window: OnceCell<WeakRef<ExampleApplicationWindow>>,
+        pub window: OnceCell<WeakRef<UserColorEditorWindow>>,
     }
 
     #[glib::object_subclass]
@@ -40,7 +42,7 @@ mod imp {
                 return;
             }
 
-            let window = ExampleApplicationWindow::new(app);
+            let window = UserColorEditorWindow::new(app);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
@@ -91,7 +93,7 @@ impl ExampleApplication {
         .expect("Application initialization failed...")
     }
 
-    fn main_window(&self) -> ExampleApplicationWindow {
+    fn main_window(&self) -> UserColorEditorWindow {
         self.imp().window.get().unwrap().upgrade().unwrap()
     }
 

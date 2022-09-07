@@ -112,6 +112,12 @@ impl ColorOverrides {
         ron::de::from_bytes(include_bytes!("dark_default.ron")).unwrap()
     }
 
+    /// ensures that all colors in the palette meet high-contrast constraints
+    pub fn to_high_contrast(self) -> Self {
+        // TODO
+        self
+    }
+
     pub fn set_key(&mut self, key: &str, value: Option<String>) -> anyhow::Result<()> {
         match key {
             "accent_bg_color" => self.accent_bg_color = value,
@@ -221,7 +227,7 @@ impl ColorOverrides {
         }
     }
 
-    pub fn as_css(&self) -> String {
+    pub fn as_gtk_css(&self) -> String {
         let mut user_color_css = String::new();
         if let Some(accent_bg_color) = self.accent_bg_color.as_ref() {
             user_color_css.push_str(&format!(
