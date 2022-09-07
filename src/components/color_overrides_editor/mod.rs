@@ -122,8 +122,7 @@ impl ColorOverridesEditor {
         // if no valid config exists, create one
         let mut config = match Config::load() {
             Ok(c) => c,
-            Err(e) => {
-                dbg!(e);
+            Err(_) => {
                 let c = Config::default();
                 c.save().unwrap();
                 c
@@ -155,7 +154,6 @@ impl ColorOverridesEditor {
                     let mut config: Config = self_.imp().config.borrow().clone();
                     if match config {
                         Config::DarkLight { ref mut is_dark, .. } if *is_dark != dark => {
-                            dbg!(&is_dark, &dark);
                             *is_dark = dark;
                             true
                         },
@@ -163,7 +161,6 @@ impl ColorOverridesEditor {
                     } {
                         if let Some(name) = config.active_name() {
                             if let Ok(palette) = ColorOverrides::load_from_name(&name) {
-                                dbg!(&palette);
                                 self_.imp().theme.replace(palette);
                             }
                             let _ = config.apply_gtk4();
@@ -318,7 +315,11 @@ impl ColorOverridesEditor {
 
     fn set_config_widgets(&self, config_box: &Box, config: &Config) {
         match config {
-            Config::DarkLight { .. } => {
+            Config::DarkLight {
+                is_dark,
+                is_high_contrast,
+                ..
+            } => {
                 view! {
                     light_box = Box {
                         set_orientation: Orientation::Horizontal,
@@ -350,33 +351,68 @@ impl ColorOverridesEditor {
                         append: dark_dropdown = &ThemeDropdown::new(Some(Watch::Dark)),
                     }
                 };
+                view! {
+                    prefer_dark = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+                        append = &Label {
+                            set_text: &fl!("set-dark-switch"),
+                        },
+                        append: dark_light_switch = &Switch {},
+                    }
+                };
+                view! {
+                    high_contrast = Box {
+                        set_orientation: Orientation::Horizontal,
+                        set_spacing: 4,
+                        set_margin_top: 4,
+                        set_margin_bottom: 4,
+                        set_margin_start: 4,
+                        set_margin_end: 4,
+                        append = &Label {
+                            set_text: &fl!("set-high-contrast-switch"),
+                        },
+                        append: high_contrast_switch = &Switch {},
+                    }
+                };
                 cascade! {
                     config_box;
                     ..append(&light_box);
                     ..append(&dark_box);
+                    ..append(&prefer_dark);
+                    ..append(&high_contrast);
                 };
+                dark_light_switch.set_state(*is_dark);
+                dark_light_switch.set_state(*is_high_contrast);
 
                 // TODO init selection with config values
                 light_dropdown.connect_closure(
                     "theme-selected",
                     false,
                     closure_local!(@weak-allow-none light_theme_label, @weak-allow-none self as self_  => move |_file_button: ThemeDropdown, f: File| {
-                        if let (Some(_), Some(name)) = (light_theme_label, f.basename()) {
+                        if let (Some(_), Some(name), Some(self_)) = (light_theme_label, f.basename(), self_) {
                             let name = name.file_stem().unwrap().to_string_lossy();
-                            user_colors::config::Config::set_active_light(&name).unwrap();
-                            if let Err(err) = Config::load().and_then(|c| match c.active_name() {
-                                Some(_) => {
-                                    let _ = c.save();
-                                    c.apply_gtk4()
-                                },
-                                _ => Ok(()),
-                            }) {
-                                if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
+                            let mut c = self_.imp().config.borrow().clone();
+                            match c {
+                                Config::DarkLight { ref mut light, .. } => {*light = name.to_string();}
+                                _ => return,
+                            };
+                            if let Err(err) = {
+                                c.active_name();
+                                let _ = c.save();
+                                c.apply_gtk4()
+                            } {
+                                if let Some(window) = self_.root().and_then(|root| {
                                     root.downcast::<Window>().ok()
                                 }) {
                                     glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
                                 };
                             }
+                            self_.imp().config.replace(c);
                         }
                     }),
                 );
@@ -385,25 +421,40 @@ impl ColorOverridesEditor {
                     "theme-selected",
                     false,
                     closure_local!(@weak-allow-none dark_theme_label, @weak-allow-none self as self_ => move |_file_button: ThemeDropdown, f: File| {
-                        if let (Some(_), Some(name)) = (dark_theme_label, f.basename()) {
+                        if let (Some(_), Some(name), Some(self_)) = (dark_theme_label, f.basename(), self_) {
                             let name = name.file_stem().unwrap().to_string_lossy();
-                            user_colors::config::Config::set_active_dark(&name).unwrap();
-                            if let Err(err) = Config::load().and_then(|c| match c.active_name() {
-                                Some(_) => {
-                                    let _ = c.save();
-                                    c.apply_gtk4()
-                                },
-                                _ => Ok(()),
-                            }) {
-                                if let Some(window) = self_.and_then(|self_| self_.root()).and_then(|root| {
+                            let mut c = self_.imp().config.borrow().clone();
+                            match c {
+                                Config::DarkLight { ref mut dark, .. } => {*dark = name.to_string();}
+                                _ => return,
+                            };
+                            if let Err(err) = {
+                                c.active_name();
+                                let _ = c.save();
+                                c.apply_gtk4()
+                            } {
+                                if let Some(window) = self_.root().and_then(|root| {
                                     root.downcast::<Window>().ok()
                                 }) {
                                     glib::MainContext::default().spawn_local(Self::dialog(window, format!("Warning to apply custom colors. {}", err)));
                                 };
                             }
+                            self_.imp().config.replace(c);
                         }
                     }),
                 );
+                dark_light_switch.connect_state_set(glib::clone!(@weak self as self_ => @default-return gtk4::Inhibit(false), move |_, state| {
+                    if let Some(settings) = self_.imp().dark_settings.get() {
+                        let _ = settings.set_string("color-scheme", if state {"prefer-dark"} else {"prefer-light"});
+                    }
+                    gtk4::Inhibit(false)
+                }));
+                high_contrast_switch.connect_state_set(glib::clone!(@weak self as self_ => @default-return gtk4::Inhibit(false), move |_, state| {
+                    if let Some(settings) = self_.imp().high_contrast_settings.get() {
+                        let _ = settings.set_boolean("high-contrast", state);
+                    }
+                    gtk4::Inhibit(false)
+                }));
             }
             Config::Static { .. } => {
                 view! {

@@ -7,6 +7,8 @@ apply-to-all-apps = Color all applications (Restart non-cosmic apps to apply cha
 current-light-theme = Current light theme:
 current-dark-theme = Current dark theme:
 dark-light-switch = Enable dark / light switching
+set-dark-switch = Dark Mode
+set-high-contrast-switch = High Contrast Mode
 
 accent-Colors = Accent Colors
 accent-background-color = Accent Background Color
