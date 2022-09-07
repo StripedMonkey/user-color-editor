@@ -231,6 +231,24 @@ impl Config {
         }
     }
 
+    pub fn get_active(&self) -> anyhow::Result<ColorOverrides> {
+        let active = match self.active_name() {
+            Some(n) => n,
+            _ => anyhow::bail!("No configured active overrides"),
+        };
+        let css_path: PathBuf = [NAME, THEME_DIR].iter().collect();
+        let css_dirs = xdg::BaseDirectories::with_prefix(css_path)?;
+        let active_theme_path = match css_dirs.find_data_file(format!("{active}.ron")) {
+            Some(p) => p,
+            _ => anyhow::bail!("Could not find theme"),
+        };
+        let active_theme_file = File::open(active_theme_path)?;
+        let reader = BufReader::new(active_theme_file);
+
+        let colors = ron::de::from_reader::<_, ColorOverrides>(reader)?;
+        Ok(colors)
+    }
+
     pub fn set_active_light(new: &str) -> Result<()> {
         let mut self_ = Self::load()?;
         match self_ {
