@@ -32,7 +32,7 @@ dependencies = [
  "csscolorparser",
  "futures",
  "hex",
- "iced 0.4.2 (git+https://github.com/wash2/iced?branch=custom-theme)",
+ "iced",
  "log",
  "notify",
  "palette",
@@ -45,13 +45,13 @@ dependencies = [
 [[package]]
 name = "adw-user-colors-lib"
 version = "0.1.0"
-source = "git+https://github.com/pop-os/user-color-editor#f676f9309747e2dfc87acfbd67d036802ceb4cb3"
+source = "git+https://github.com/pop-os/user-color-editor#e36b0fc3c1e9065446a000cb5b8e1095fbbbea24"
 dependencies = [
  "anyhow",
  "csscolorparser",
  "futures",
  "hex",
- "iced 0.4.2 (git+https://github.com/wash2/iced)",
+ "iced",
  "log",
  "notify",
  "palette",
@@ -246,7 +246,7 @@ checksum = "14c189c53d098945499cdfa7ecc63567cf3886b3332b312a5b4585d8d3a6a610"
 [[package]]
 name = "cairo-rs"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "bitflags",
  "cairo-sys-rs",
@@ -259,7 +259,7 @@ dependencies = [
 [[package]]
 name = "cairo-sys-rs"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib-sys",
  "libc",
@@ -1037,7 +1037,7 @@ dependencies = [
 [[package]]
 name = "gdk-pixbuf"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "bitflags",
  "gdk-pixbuf-sys",
@@ -1049,7 +1049,7 @@ dependencies = [
 [[package]]
 name = "gdk-pixbuf-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "gio-sys",
  "glib-sys",
@@ -1145,7 +1145,7 @@ dependencies = [
 [[package]]
 name = "gio"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -1162,7 +1162,7 @@ dependencies = [
 [[package]]
 name = "gio-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -1183,7 +1183,7 @@ dependencies = [
 [[package]]
 name = "glib"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "bitflags",
  "futures-channel",
@@ -1196,7 +1196,6 @@ dependencies = [
  "gobject-sys",
  "libc",
  "once_cell",
- "rustc-hash",
  "smallvec",
  "thiserror",
 ]
@@ -1204,12 +1203,12 @@ dependencies = [
 [[package]]
 name = "glib-build-tools"
 version = "0.1.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 
 [[package]]
 name = "glib-macros"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "anyhow",
  "heck",
@@ -1223,7 +1222,7 @@ dependencies = [
 [[package]]
 name = "glib-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "libc",
  "system-deps",
@@ -1283,7 +1282,7 @@ dependencies = [
 [[package]]
 name = "gobject-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib-sys",
  "libc",
@@ -1332,7 +1331,7 @@ dependencies = [
 [[package]]
 name = "graphene-rs"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib",
  "graphene-sys",
@@ -1342,7 +1341,7 @@ dependencies = [
 [[package]]
 name = "graphene-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib-sys",
  "libc",
@@ -1562,26 +1561,12 @@ name = "iced"
 version = "0.4.2"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
 dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_wgpu 0.5.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_winit 0.4.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "thiserror",
-]
-
-[[package]]
-name = "iced"
-version = "0.4.2"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced)",
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced)",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced)",
- "iced_wgpu 0.5.1 (git+https://github.com/wash2/iced)",
- "iced_winit 0.4.0 (git+https://github.com/wash2/iced)",
+ "iced_core",
+ "iced_futures",
+ "iced_graphics",
+ "iced_native",
+ "iced_wgpu",
+ "iced_winit",
  "thiserror",
 ]
 
@@ -1589,16 +1574,6 @@ dependencies = [
 name = "iced_core"
 version = "0.5.0"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
-dependencies = [
- "bitflags",
- "palette",
- "wasm-timer",
-]
-
-[[package]]
-name = "iced_core"
-version = "0.5.0"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
 dependencies = [
  "bitflags",
  "palette",
@@ -1617,38 +1592,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "iced_futures"
-version = "0.4.1"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "futures",
- "log",
- "wasm-bindgen-futures",
- "wasm-timer",
-]
-
-[[package]]
 name = "iced_graphics"
 version = "0.3.1"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
 dependencies = [
  "bytemuck",
  "glam",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_style 0.4.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "raw-window-handle 0.4.3",
- "thiserror",
-]
-
-[[package]]
-name = "iced_graphics"
-version = "0.3.1"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "bytemuck",
- "glam",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced)",
- "iced_style 0.4.0 (git+https://github.com/wash2/iced)",
+ "iced_native",
+ "iced_style",
  "raw-window-handle 0.4.3",
  "thiserror",
 ]
@@ -1658,22 +1609,9 @@ name = "iced_native"
 version = "0.5.1"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
 dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_style 0.4.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "num-traits",
- "twox-hash",
- "unicode-segmentation",
-]
-
-[[package]]
-name = "iced_native"
-version = "0.5.1"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced)",
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced)",
- "iced_style 0.4.0 (git+https://github.com/wash2/iced)",
+ "iced_core",
+ "iced_futures",
+ "iced_style",
  "num-traits",
  "twox-hash",
  "unicode-segmentation",
@@ -1684,17 +1622,7 @@ name = "iced_style"
 version = "0.4.0"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
 dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "lazy_static",
- "palette",
-]
-
-[[package]]
-name = "iced_style"
-version = "0.4.0"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "iced_core 0.5.0 (git+https://github.com/wash2/iced)",
+ "iced_core",
  "lazy_static",
  "palette",
 ]
@@ -1709,27 +1637,8 @@ dependencies = [
  "futures",
  "glyph_brush",
  "guillotiere",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "kamadak-exif",
- "log",
- "raw-window-handle 0.4.3",
- "wgpu",
- "wgpu_glyph",
-]
-
-[[package]]
-name = "iced_wgpu"
-version = "0.5.1"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "bitflags",
- "bytemuck",
- "futures",
- "glyph_brush",
- "guillotiere",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced)",
+ "iced_graphics",
+ "iced_native",
  "kamadak-exif",
  "log",
  "raw-window-handle 0.4.3",
@@ -1742,25 +1651,9 @@ name = "iced_winit"
 version = "0.4.0"
 source = "git+https://github.com/wash2/iced?branch=custom-theme#4ff019b1e8e520d27cf3e6aa635e43a47771a46a"
 dependencies = [
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced?branch=custom-theme)",
- "log",
- "thiserror",
- "web-sys",
- "winapi",
- "window_clipboard",
- "winit",
-]
-
-[[package]]
-name = "iced_winit"
-version = "0.4.0"
-source = "git+https://github.com/wash2/iced#d6598119646582658783cc2d87fdfd504f4ff230"
-dependencies = [
- "iced_futures 0.4.1 (git+https://github.com/wash2/iced)",
- "iced_graphics 0.3.1 (git+https://github.com/wash2/iced)",
- "iced_native 0.5.1 (git+https://github.com/wash2/iced)",
+ "iced_futures",
+ "iced_graphics",
+ "iced_native",
  "log",
  "thiserror",
  "web-sys",
@@ -2379,7 +2272,7 @@ dependencies = [
 [[package]]
 name = "pango"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "bitflags",
  "gio",
@@ -2392,7 +2285,7 @@ dependencies = [
 [[package]]
 name = "pango-sys"
 version = "0.16.0"
-source = "git+https://github.com/gtk-rs/gtk-rs-core#9fe7e5ce970d5e992b5b4f393c52670cb2443a62"
+source = "git+https://github.com/gtk-rs/gtk-rs-core#49d9100919c51b248bc176763b203bce23efe0ee"
 dependencies = [
  "glib-sys",
  "gobject-sys",
@@ -2450,9 +2343,9 @@ dependencies = [
 
 [[package]]
 name = "percent-encoding"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4fd5641d01c8f18a23da7b6fe29298ff4b55afcccdf78973b24cf3175fee32e"
+checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "pest"
