@@ -21,7 +21,6 @@ async fn load_theme<I: Copy>(id: I, state: State) -> (Option<(I, ThemeUpdate)>, 
         State::Ready => {
             if let Ok(watcher) = ThemeWatcher::new() {
                 let palette = ThemeWatcher::palette();
-                dbg!(&palette);
                 (
                     Some((id, ThemeUpdate::Palette(palette))),
                     State::Waiting(watcher),
