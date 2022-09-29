@@ -20,9 +20,9 @@ async fn load_theme<I: Copy>(id: I, state: State) -> (Option<(I, ThemeUpdate)>, 
     match state {
         State::Ready => {
             if let Ok(watcher) = ThemeWatcher::new() {
-                let palette = ThemeWatcher::palette();
+                let (palette, color_overrides) = ThemeWatcher::palette();
                 (
-                    Some((id, ThemeUpdate::Palette(palette))),
+                    Some((id, ThemeUpdate::Palette(palette, color_overrides))),
                     State::Waiting(watcher),
                 )
             } else {
@@ -30,8 +30,8 @@ async fn load_theme<I: Copy>(id: I, state: State) -> (Option<(I, ThemeUpdate)>, 
             }
         }
         State::Waiting(mut t) => {
-            if let Some(palette) = t.palette_change().await {
-                (Some((id, ThemeUpdate::Palette(palette))), State::Waiting(t))
+            if let Some((palette, color_overrides)) = t.palette_change().await {
+                (Some((id, ThemeUpdate::Palette(palette, color_overrides))), State::Waiting(t))
             } else {
                 (Some((id, ThemeUpdate::Errored)), State::Error)
             }
@@ -50,14 +50,14 @@ pub enum State {
 #[cfg(feature = "iced")]
 #[derive(Debug, Clone)]
 pub enum ThemeUpdate {
-    Palette(Palette),
+    Palette(Palette, ColorOverrides),
     Errored,
 }
 
 #[cfg(feature = "iced")]
 pub struct ThemeWatcher {
     rx: mpsc::Receiver<notify::Event>,
-    prev_palette: Palette,
+    prev_palette: (Palette, ColorOverrides),
 }
 #[cfg(feature = "iced")]
 impl ThemeWatcher {
@@ -88,7 +88,7 @@ impl ThemeWatcher {
         Ok(Self { rx, prev_palette })
     }
 
-    pub fn palette() -> Palette {
+    pub fn palette() -> (Palette, ColorOverrides) {
         let config = config::Config::load().unwrap_or_default();
         let (mut palette, color_overrides) = config
             .get_active()
@@ -156,10 +156,10 @@ impl ThemeWatcher {
         {
             palette.danger = Color::from_rgba(c.r as f32, c.g as f32, c.b as f32, c.a as f32);
         }
-        palette
+        (palette, color_overrides)
     }
 
-    pub async fn palette_change(&mut self) -> Option<Palette> {
+    pub async fn palette_change(&mut self) -> Option<(Palette, ColorOverrides)> {
         while let Some(e) = self.rx.next().await {
             match e.kind {
                 // TODO only notify for changed data file if it is the active file
@@ -168,7 +168,7 @@ impl ThemeWatcher {
                 | notify::EventKind::Remove(_) => {
                     let new_palette = Self::palette();
                     if self.prev_palette != new_palette {
-                        self.prev_palette = new_palette;
+                        self.prev_palette = new_palette.clone();
                         return Some(new_palette);
                     }
                 }
