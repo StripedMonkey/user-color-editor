@@ -31,7 +31,10 @@ async fn load_theme<I: Copy>(id: I, state: State) -> (Option<(I, ThemeUpdate)>, 
         }
         State::Waiting(mut t) => {
             if let Some((palette, color_overrides)) = t.palette_change().await {
-                (Some((id, ThemeUpdate::Palette(palette, color_overrides))), State::Waiting(t))
+                (
+                    Some((id, ThemeUpdate::Palette(palette, color_overrides))),
+                    State::Waiting(t),
+                )
             } else {
                 (Some((id, ThemeUpdate::Errored)), State::Error)
             }
