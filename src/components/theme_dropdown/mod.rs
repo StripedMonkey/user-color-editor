@@ -27,7 +27,7 @@ pub enum Watch {
 
 impl ThemeDropdown {
     pub fn new(watch: Option<Watch>) -> Self {
-        let self_: Self = glib::Object::new(&[]).expect("Failed to create Theme Dropdown");
+        let self_: Self = glib::Object::new::<Self>(&[]);
 
         let model = ListStore::new(File::static_type());
 

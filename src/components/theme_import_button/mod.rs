@@ -75,7 +75,7 @@ impl ThemeImportButton {
     pub fn new() -> Self {
         let button = Button::with_label("Import theme");
 
-        let self_: Self = glib::Object::new(&[]).expect("Failed to create `ThemeImportButton`.");
+        let self_: Self = glib::Object::new::<Self>(&[]);
         cascade! {
             &self_;
             ..append(&button);

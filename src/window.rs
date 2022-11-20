@@ -39,26 +39,27 @@ mod imp {
     }
 
     impl ObjectImpl for UserColorEditorWindow {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
-
+        fn constructed(&self) {
+            self.parent_constructed();
             // Devel Profile
+
             if PROFILE == "Devel" {
-                obj.add_css_class("devel");
+                self.obj().add_css_class("devel");
             }
         }
     }
 
     impl WidgetImpl for UserColorEditorWindow {}
+
     impl WindowImpl for UserColorEditorWindow {
         // Save window state on delete event
-        fn close_request(&self, window: &Self::Type) -> gtk4::Inhibit {
-            if let Err(err) = window.save_window_size() {
+        fn close_request(&self) -> gtk4::Inhibit {
+            if let Err(err) = self.obj().save_window_size() {
                 log::warn!("Failed to save window state, {}", &err);
             }
 
             // Pass close request on to the parent
-            self.parent_close_request(window)
+            self.parent_close_request()
         }
     }
 
@@ -73,8 +74,7 @@ glib::wrapper! {
 
 impl UserColorEditorWindow {
     pub fn new(app: &ExampleApplication) -> Self {
-        let self_: Self = glib::Object::new(&[("application", app)])
-            .expect("Failed to create UserColorEditorWindow");
+        let self_ = glib::Object::new::<Self>(&[("application", app)]);
         self_.set_child(Some(&ColorOverridesEditor::new()));
         self_.set_hide_on_close(true);
 

@@ -39,7 +39,7 @@ impl Default for ColorOverridesEditor {
 
 impl ColorOverridesEditor {
     pub fn new() -> Self {
-        let self_: Self = glib::Object::new(&[]).expect("Failed to create Theme Editor Widget");
+        let self_: Self = glib::Object::new::<Self>(&[]);
 
         let imp = imp::ColorOverridesEditor::from_instance(&self_);
 

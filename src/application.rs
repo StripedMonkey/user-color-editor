@@ -31,9 +31,9 @@ mod imp {
     impl ObjectImpl for ExampleApplication {}
 
     impl ApplicationImpl for ExampleApplication {
-        fn activate(&self, app: &Self::Type) {
+        fn activate(&self) {
             debug!("GtkApplication<ExampleApplication>::activate");
-            self.parent_activate(app);
+            self.parent_activate();
 
             if let Some(window) = self.window.get() {
                 let window = window.upgrade().unwrap();
@@ -41,27 +41,29 @@ mod imp {
                 window.present();
                 return;
             }
+            let example_application = self.obj();
 
-            let window = UserColorEditorWindow::new(app);
+            let window = UserColorEditorWindow::new(&example_application);
             self.window
                 .set(window.downgrade())
                 .expect("Window already set.");
             if std::env::var("COSMIC_USER_COLOR_EDITOR_HIDDEN").is_err() {
-                app.main_window().load_window_size();
-                app.main_window().present();
+                example_application.main_window().load_window_size();
+                example_application.main_window().present();
             }
         }
 
-        fn startup(&self, app: &Self::Type) {
+        fn startup(&self) {
             debug!("GtkApplication<ExampleApplication>::startup");
-            self.parent_startup(app);
+            self.parent_startup();
 
             // Set icons for shell
             gtk4::Window::set_default_icon_name(APP_ID);
+            let example_application = self.obj();
 
-            app.setup_css();
-            app.setup_gactions();
-            app.setup_accels();
+            example_application.setup_css();
+            example_application.setup_gactions();
+            example_application.setup_accels();
         }
     }
 
@@ -82,7 +84,7 @@ impl Default for ExampleApplication {
 
 impl ExampleApplication {
     pub fn new() -> Self {
-        glib::Object::new(&[
+        glib::Object::new::<Self>(&[
             ("application-id", &Some(APP_ID)),
             ("flags", &gio::ApplicationFlags::empty()),
             (
@@ -90,7 +92,6 @@ impl ExampleApplication {
                 &Some("/com/system76/UserColorEditor/"),
             ),
         ])
-        .expect("Application initialization failed...")
     }
 
     fn main_window(&self) -> UserColorEditorWindow {
